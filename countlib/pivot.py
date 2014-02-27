@@ -106,25 +106,24 @@ class PivotCounter(dict):
         if iterable is not None:
             if isinstance(iterable, PivotCounter):
                 if self:
-                    self_get = self.get
+                    self_get = self.setdefault
                     for elem, count in iterable.iteritems():
-                        self[elem] = self_get(elem, set()).union(count)
+                        self[elem] = self_get(elem, set()).update(count)
                 else:
                     dict.update(self, iterable) # fast path when counter is empty
             elif hasattr(iterable, 'iteritems'):
                 def pivot(item):
                     self.setdefault(item[1], set()).add(item[0])
                 map(pivot, iterable.iteritems())
-            #else:
-                #print "Sorry. No iterables."
-                #self_get = self.setdefault
-                #for not_a_count, elem in enumerate(iterable):
-                    #self[not_a_count] = self_get(not_a_count, set()).add(elem)
+            else: # slow path (by now)
+                self.update(Counter(iterable))
         if kwds:
             self.update(kwds)
 
     def copy(self):
-        'Like dict.copy() but returns a PivotCounter instance instead of a dict.'
+        ''' Like dict.copy() but returns a PivotCounter instance instead of a dict.
+            The sets actinng as values are copied as well.
+        '''
         return PivotCounter(self)
 
 
@@ -161,18 +160,25 @@ class PivotCounter(dict):
         '''
         if not isinstance(other, PivotCounter):
             return NotImplemented
-        result = PivotCounter()
-        for elem in set(self) | set(other):
-            newcount = self[elem].union(other[elem])
-            if newcount:
-                result[elem] = newcount
-        return result
+        return PivotCounter(self.counter() + other.counter())
 
     def __sub__(self, other):
-        ''' Subtract count, but keep only results with non-empty sets.
+        ''' Subtract the underlying Counters.
 
         >>> PivotCounter'abbbc') - PivotCounter'bccd')
         PivotCounter{'b': 2, 'a': 1})
+
+        '''
+        if not isinstance(other, PivotCounter):
+            return NotImplemented
+        return PivotCounter(self.counter() - other.counter())
+
+    def __or__(self, other):
+        '''Union is about the easiest to convert, but it does not
+        respect the structure of the underlying Counters.
+
+        >>> PivotCounter('abbb') | PivotCounter('bcc')
+        PivotCounter({'b': 3, 'c': 2, 'a': 1})
 
         '''
         if not isinstance(other, PivotCounter):
@@ -184,25 +190,9 @@ class PivotCounter(dict):
                 result[elem] = newcount
         return result
 
-    def __or__(self, other):
-        '''Union is about the easiest to convert.
-
-        >>> PivotCounter('abbb') | PivotCounter('bcc')
-        PivotCounter({'b': 3, 'c': 2, 'a': 1})
-
-        '''
-        if not isinstance(other, PivotCounter):
-            return NotImplemented
-        result = PivotCounter()
-        for elem in set(self) | set(other):
-            newcount = self[elem] | other[elem]
-            if newcount:
-                result[elem] = newcount
-        return result
-
     def __and__(self, other):
-        ''' Intersection is the minimum (intersection) of
-        corresponding counts (sets).
+        ''' Intersection leaves only the counts (keys) and
+        things (sets), that have an equal count in each pivot.
 
         >>> PivotCounter('abbb') & PivotCounter('bcc')
         PivotCounter({'b': 1})
