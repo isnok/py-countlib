@@ -15,6 +15,12 @@ class PivotCounter(dict):
     PivotCounter({1: set(['g']), 2: set(['z']), 3: set(['y'])})
     >>> PivotCounter(Counter('zyzygy'))
     PivotCounter({1: set(['g']), 2: set(['z']), 3: set(['y'])})
+    >>> PivotCounter('lalalohoe') == PivotCounter(Counter('lalalohoe'))
+    True
+    >>> PivotCounter('lllaaoohe') == PivotCounter('lalalohoe')
+    True
+    >>> PivotCounter('lllaaoohe') == PivotCounter(set('lalalohoe'))
+    False
 
     '''
 
@@ -37,7 +43,7 @@ class PivotCounter(dict):
         '''List the n most common elements and their counts from the most
         common to the least.  If n is None, then list all element counts.
 
-        >>> Counter('abracadabra').most_common(3)
+        >>> PivotCounter('abracadabra').most_common(3)
         [('a', 5), ('r', 2), ('b', 2)]
 
         '''
@@ -51,7 +57,7 @@ class PivotCounter(dict):
         '''Iterator over elements repeating each as many times as its count.
         This relies on values to be iterable and keys to be integers.
 
-        >>> c = Counter('ABCABC')
+        >>> c = PivotCounter('ABCABC')
         >>> sorted(c.elements())
         ['A', 'A', 'B', 'B', 'C', 'C']
 
@@ -68,9 +74,9 @@ class PivotCounter(dict):
         '''Iterator over (element, count) tuples of underlying Counter.
         This only relies on values to be iterable.
 
-        >>> c = Counter('ABCABC')
+        >>> c = PivotCounter('ABCABC')
         >>> sorted(c.counter_items())
-        ['A', 'A', 'B', 'B', 'C', 'C']
+        [('A', 2), ('B', 2), ('C', 2)]
 
         '''
         for count, elem_set in self.iteritems():
@@ -159,6 +165,8 @@ class PivotCounter(dict):
 
         >>> PivotCounter('abbb') + PivotCounter('bcc')
         PivotCounter({1: set(['a']), 2: set(['c']), 4: set(['b'])})
+        >>> PivotCounter(Counter('abbb') + Counter('bcc'))
+        PivotCounter({1: set(['a']), 2: set(['c']), 4: set(['b'])})
 
 
         '''
@@ -170,8 +178,9 @@ class PivotCounter(dict):
         ''' Subtract the underlying Counters.
 
         >>> PivotCounter('abbbc') - PivotCounter('bccd')
-        PivotCounter({'b': 2, 'a': 1})
-
+        PivotCounter({1: set(['a']), 2: set(['b'])})
+        >>> PivotCounter(Counter('abbbc') - Counter('bccd'))
+        PivotCounter({1: set(['a']), 2: set(['b'])})
         '''
         if not isinstance(other, PivotCounter):
             return NotImplemented
@@ -182,7 +191,7 @@ class PivotCounter(dict):
         respect the structure of the underlying Counters.
 
         >>> PivotCounter('abbb') | PivotCounter('bcc')
-        PivotCounter({'b': 3, 'c': 2, 'a': 1})
+        PivotCounter({2: set(['c']), 3: set(['b']), 1: set(['a', 'b'])})
 
         '''
         if not isinstance(other, PivotCounter):
@@ -198,8 +207,10 @@ class PivotCounter(dict):
         ''' Intersection leaves only the counts (keys) and
         things (sets), that have an equal count in each pivot.
 
+        >>> PivotCounter('hello') & PivotCounter('hallo')
+        PivotCounter({2: set(['l']), 1: set(['h', 'o'])})
         >>> PivotCounter('abbb') & PivotCounter('bcc')
-        PivotCounter({'b': 1})
+        PivotCounter()
 
         '''
         if not isinstance(other, PivotCounter):
