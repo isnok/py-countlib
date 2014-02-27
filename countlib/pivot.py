@@ -12,9 +12,9 @@ class PivotCounter(dict):
         sense, the set sizes are used by default (most_common).
 
     >>> PivotCounter('zyzygy')
-    PivotCounter({1: set(['g']), 2: set(['z']), 3: set(['y'])})
+    PivotCounter({1: ['g'], 2: ['z'], 3: ['y']})
     >>> PivotCounter(Counter('zyzygy'))
-    PivotCounter({1: set(['g']), 2: set(['z']), 3: set(['y'])})
+    PivotCounter({1: ['g'], 2: ['z'], 3: ['y']})
     >>> PivotCounter('lalalohoe') == PivotCounter(Counter('lalalohoe'))
     True
     >>> PivotCounter('lllaaoohe') == PivotCounter('lalalohoe')
@@ -31,11 +31,11 @@ class PivotCounter(dict):
         >>> PivotCounter() == {}             # a new, empty counter
         True
         >>> PivotCounter('gallahad')         # a new counter from an iterable
-        PivotCounter({2: set(['l']), 3: set(['a']), 1: set(['h', 'd', 'g'])})
+        PivotCounter({1: ['d', 'g', 'h'], 2: ['l'], 3: ['a']})
         >>> PivotCounter({'a': 4, 'b': 2})   # a new counter from a mapping
-        PivotCounter({2: set(['b']), 4: set(['a'])})
+        PivotCounter({2: ['b'], 4: ['a']})
         >>> PivotCounter(a=4, b=2)           # a new counter from keyword args
-        PivotCounter({2: set(['b']), 4: set(['a'])})
+        PivotCounter({2: ['b'], 4: ['a']})
 
         """
         self.update(iterable, **kwds)
@@ -145,13 +145,13 @@ class PivotCounter(dict):
             The values can be constructed from the keys via the v_func argument.
 
         >>> PivotCounter.fromkeys('watch')
-        PivotCounter({'a': set([]), 'h': set([]), 'c': set([]), 't': set([]), 'w': set([])})
+        PivotCounter({'a': [], 'h': [], 'c': [], 't': [], 'w': []})
         >>> PivotCounter.fromkeys('watchhhh')
-        PivotCounter({'a': set([]), 'h': set([]), 'c': set([]), 't': set([]), 'w': set([])})
+        PivotCounter({'a': [], 'h': [], 'c': [], 't': [], 'w': []})
         >>> PivotCounter.fromkeys('not supplying a v_func means nothing.').unpivot()
         Counter()
         >>> PivotCounter.fromkeys([1,2,3], lambda n: set(range(n)))
-        PivotCounter({1: set([0]), 2: set([0, 1]), 3: set([0, 1, 2])})
+        PivotCounter({1: [0], 2: [0, 1], 3: [0, 1, 2]})
 
         """
         new = cls()
@@ -162,22 +162,21 @@ class PivotCounter(dict):
         return new
 
     def update(self, iterable=None, **kwds):
-        '''Like Counter.update() but union sets instead of adding counts.
-
-        Source can be a dictionary or Counter instance or another PivotCounter.
+        """ Like Counter.update() but union sets instead of adding counts.
+            Source can be a dictionary or Counter instance or another PivotCounter.
 
         >>> d = PivotCounter('watch')
         >>> d.update('boofittii')          # add in elements via another counter-like
         >>> d                              #  v---- notice the now existing duplicate -----v
-        PivotCounter({3: set(['i']), 2: set(['t', 'o']), 1: set(['a', 'c', 'b', 'f', 'h', 't', 'w'])})
+        PivotCounter({1: ['a', 'b', 'c', 'f', 'h', 't', 'w'], 2: ['o', 't'], 3: ['i']})
         >>> PivotCounter(d.unpivot())      # to fix it regenerate the PivotCounter
-        PivotCounter({2: set(['o']), 3: set(['i', 't']), 1: set(['a', 'c', 'b', 'f', 'h', 'w'])})
+        PivotCounter({1: ['a', 'b', 'c', 'f', 'h', 'w'], 2: ['o'], 3: ['i', 't']})
         >>> c = PivotCounter('which')
         >>> c.update(PivotCounter('boof')) # update the dict way
         >>> c
-        PivotCounter({2: set(['o']), 1: set(['b', 'f'])})
+        PivotCounter({1: ['b', 'f'], 2: ['o']})
 
-        '''
+        """
         if iterable is not None:
             if isinstance(iterable, PivotCounter):
                 dict.update(self, iterable) # fast path when counter is empty
@@ -189,23 +188,59 @@ class PivotCounter(dict):
         if kwds:
             self.update(kwds)
 
-    def copy(self):
-        ''' Like dict.copy() but returns a PivotCounter instance instead of a dict.
-            The sets acting as values are copied as well.
-        '''
-        return PivotCounter(self)
-
-
     def __delitem__(self, elem):
-        'Like dict.__delitem__() but does not raise KeyError for missing values.'
+        """ Like dict.__delitem__() but does not raise KeyError for missing values.
+
+        >>> c = PivotCounter('which')
+        >>> del c[2]
+        >>> c
+        PivotCounter({1: ['c', 'i', 'w']})
+        >>> del c["not there"]
+
+        """
+
         if elem in self:
             dict.__delitem__(self, elem)
 
+    def copy(self):
+        """ Like dict.copy() but returns a PivotCounter instance instead of a dict.
+            The sets acting as values are copied as well.
+
+        >>> c = PivotCounter('which')
+        >>> d = c.copy()
+        >>> del c[2]
+        >>> c, d
+        (PivotCounter({1: ['c', 'i', 'w']}), PivotCounter({1: ['c', 'i', 'w'], 2: ['h']}))
+        >>> d[1].discard('c')
+        >>> c, d
+        (PivotCounter({1: ['c', 'i', 'w']}), PivotCounter({1: ['i', 'w'], 2: ['h']}))
+        """
+        result = PivotCounter()
+        for count in self:
+            result[count] = self[count].copy()
+        return result
+
+
     def __repr__(self):
+        """ Output like defaultdict or other dict variants.
+            But copy-pasting the String will not work.
+
+        >>> PivotCounter('bumm')
+        PivotCounter({1: ['b', 'u'], 2: ['m']})
+        >>> PivotCounter({1: ['b', 'u'], 2: ['m']})
+        Traceback (most recent call last):
+        ...
+        TypeError: unhashable type: 'list'
+        """
+        def stable_output():
+            for count, elem_set in self.iteritems():
+                yield '%r: %r' % (count, sorted(elem_set))
+
         if not self:
             return '%s()' % self.__class__.__name__
-        items = ', '.join(map('%r: %r'.__mod__, self.most_common()))
+        items = ', '.join(stable_output())
         return '%s({%s})' % (self.__class__.__name__, items)
+
 
     # Multiset-style mathematical operations discussed in:
     #       Knuth TAOCP Volume II section 4.6.3 exercise 19
@@ -223,9 +258,9 @@ class PivotCounter(dict):
         Slow by now, and may be hard to optimize.
 
         >>> PivotCounter('abbb') + PivotCounter('bcc')
-        PivotCounter({1: set(['a']), 2: set(['c']), 4: set(['b'])})
+        PivotCounter({1: ['a'], 2: ['c'], 4: ['b']})
         >>> PivotCounter(Counter('abbb') + Counter('bcc'))
-        PivotCounter({1: set(['a']), 2: set(['c']), 4: set(['b'])})
+        PivotCounter({1: ['a'], 2: ['c'], 4: ['b']})
 
 
         '''
@@ -237,9 +272,9 @@ class PivotCounter(dict):
         ''' Subtract the underlying Counters.
 
         >>> PivotCounter('abbbc') - PivotCounter('bccd')
-        PivotCounter({1: set(['a']), 2: set(['b'])})
+        PivotCounter({1: ['a'], 2: ['b']})
         >>> PivotCounter(Counter('abbbc') - Counter('bccd'))
-        PivotCounter({1: set(['a']), 2: set(['b'])})
+        PivotCounter({1: ['a'], 2: ['b']})
         '''
         if not isinstance(other, PivotCounter):
             return NotImplemented
@@ -250,7 +285,7 @@ class PivotCounter(dict):
         respect the structure of the underlying Counters.
 
         >>> PivotCounter('abbb') | PivotCounter('bcc')
-        PivotCounter({2: set(['c']), 3: set(['b']), 1: set(['a', 'b'])})
+        PivotCounter({1: ['a', 'b'], 2: ['c'], 3: ['b']})
 
         '''
         if not isinstance(other, PivotCounter):
@@ -267,7 +302,7 @@ class PivotCounter(dict):
         things (sets), that have an equal count in each pivot.
 
         >>> PivotCounter('hello') & PivotCounter('hallo')
-        PivotCounter({2: set(['l']), 1: set(['h', 'o'])})
+        PivotCounter({1: ['h', 'o'], 2: ['l']})
         >>> PivotCounter('abbb') & PivotCounter('bcc')
         PivotCounter()
 
