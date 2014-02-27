@@ -39,7 +39,7 @@ class ExtremeCounter(Counter):
 
     @classmethod
     def fromkeys(cls, iterable, v=0):
-        """ Init a constant Counter. """
+        """ Init a constant Counter. Useful for Counter arithmetic. """
         return cls(dict.fromkeys(iterable, v))
 
 

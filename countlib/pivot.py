@@ -139,12 +139,27 @@ class PivotCounter(dict):
 
         return Counter(iter_counts())
 
-    # Override dict methods where the meaning changes for Counter objects.
+    @classmethod
+    def fromkeys(cls, iterable, v_func=None):
+        """ Initialize a pivot table from an iterable delivering counts.
+            The values can be constructed from the keys via the v_func argument.
 
-    #@classmethod
-    #def fromkeys(cls, iterable, v=None):
-        #raise NotImplementedError(
-            #'Counter.fromkeys() is undefined.  Use Counter(iterable) instead.')
+        >>> PivotCounter.fromkeys('watch')
+        PivotCounter({'a': set([]), 'h': set([]), 'c': set([]), 't': set([]), 'w': set([])})
+        >>> PivotCounter.fromkeys('watchhhh')
+        PivotCounter({'a': set([]), 'h': set([]), 'c': set([]), 't': set([]), 'w': set([])})
+        >>> PivotCounter.fromkeys('not supplying a v_func means nothing.').unpivot()
+        Counter()
+        >>> PivotCounter.fromkeys([1,2,3], lambda n: set(range(n)))
+        PivotCounter({1: set([0]), 2: set([0, 1]), 3: set([0, 1, 2])})
+
+        """
+        new = cls()
+        if v_func is None:
+            v_func = new.__missing__
+        for count in iterable:
+            new[count] = v_func(count)
+        return new
 
     def update(self, iterable=None, **kwds):
         '''Like Counter.update() but union sets instead of adding counts.
@@ -155,8 +170,8 @@ class PivotCounter(dict):
         >>> d.update('boofittii')          # add in elements via another counter-like
         >>> d                              #  v---- notice the now existing duplicate -----v
         PivotCounter({3: set(['i']), 2: set(['t', 'o']), 1: set(['a', 'c', 'b', 'f', 'h', 't', 'w'])})
-        >>> PivotCounter(d.counter())      # to fix it regenerate the PivotCounter
-        PivotCounter()
+        >>> PivotCounter(d.unpivot())      # to fix it regenerate the PivotCounter
+        PivotCounter({2: set(['o']), 3: set(['i', 't']), 1: set(['a', 'c', 'b', 'f', 'h', 'w'])})
         >>> c = PivotCounter('which')
         >>> c.update(PivotCounter('boof')) # update the dict way
         >>> c
@@ -176,7 +191,7 @@ class PivotCounter(dict):
 
     def copy(self):
         ''' Like dict.copy() but returns a PivotCounter instance instead of a dict.
-            The sets actinng as values are copied as well.
+            The sets acting as values are copied as well.
         '''
         return PivotCounter(self)
 
