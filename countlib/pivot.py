@@ -2,14 +2,14 @@
 from collections import Counter
 
 from operator import itemgetter
-from heapq import nlargest
+from heapq import nlargest, nsmallest
 from itertools import repeat, ifilter
 
 class PivotCounter(dict):
-    '''Counter variant to act as pivot tables to Counters.
-    Counts are stored as dictionary keys and their keys
-    are stored in sets as dictionary values.  Where integer
-    values make sense, sets are replaced by their lenght.
+    """ Counter variant to act as pivot tables to Counters.
+        Counts are used as keys and their keys are aggregated
+        in sets as dictionary values. Where integer values make
+        sense, the set sizes are used by default (most_common).
 
     >>> PivotCounter('zyzygy')
     PivotCounter({1: set(['g']), 2: set(['z']), 3: set(['y'])})
@@ -22,40 +22,61 @@ class PivotCounter(dict):
     >>> PivotCounter('lllaaoohe') == PivotCounter(set('lalalohoe'))
     False
 
-    '''
+    """
 
     def __init__(self, iterable=None, **kwds):
-        '''Create a new, empty PivotCounter object. And if given, count elements
-        from an input Counter or dict. Or, initialize from another PivotCounter.
+        """ Create a new, empty PivotCounter object. And if given, count elements
+            from an input Counter or dict. Or, initialize from another PivotCounter.
 
-        >>> c = PivotCounter()                   # a new, empty counter
-        >>> c = PivotCounter('gallahad')         # a new counter from an iterable
-        >>> c = PivotCounter({'a': 4, 'b': 2})   # a new counter from a mapping
-        >>> c = PivotCounter(a=4, b=2)           # a new counter from keyword args
+        >>> PivotCounter() == {}             # a new, empty counter
+        True
+        >>> PivotCounter('gallahad')         # a new counter from an iterable
+        PivotCounter({2: set(['l']), 3: set(['a']), 1: set(['h', 'd', 'g'])})
+        >>> PivotCounter({'a': 4, 'b': 2})   # a new counter from a mapping
+        PivotCounter({2: set(['b']), 4: set(['a'])})
+        >>> PivotCounter(a=4, b=2)           # a new counter from keyword args
+        PivotCounter({2: set(['b']), 4: set(['a'])})
 
-        '''
+        """
         self.update(iterable, **kwds)
 
     def __missing__(self, key):
+        """ Create a new, empty PivotCounter object. And if given, count elements
+            from an input Counter or dict. Or, initialize from another PivotCounter.
+
+        >>> PivotCounter()["x"]
+        set([])
+        """
         return set()
 
-    def most_common(self, n=None):
-        '''List the n most common elements and their counts from the most
-        common to the least.  If n is None, then list all element counts.
+    def most_common(self, n=None, count_func=None, reverse=False):
+        """ List the n most common elements and their counts from the most
+            common to the least.  If n is None, then list all element counts.
 
-        >>> PivotCounter('abracadabra').most_common(3)
-        [('a', 5), ('r', 2), ('b', 2)]
+        >>> p = PivotCounter('abracadabra!')
+        >>> p.most_common(3)
+        [(1, set(['!', 'c', 'd'])), (2, set(['r', 'b'])), (5, set(['a']))]
+        >>> p.most_common(2, reverse=True)
+        [(5, set(['a'])), (2, set(['r', 'b']))]
+        >>> p.most_common(2, count_func=lambda i: -len(i[1]))
+        [(5, set(['a'])), (2, set(['r', 'b']))]
+        >>> p.most_common(2, count_func=lambda i: -len(i[1]), reverse=True)
+        [(1, set(['!', 'c', 'd'])), (2, set(['r', 'b']))]
 
-        '''
-        def get_set_len(item):
-            return len(item[1])
+        """
+        if count_func is None:
+            def count_func(item):
+                return len(item[1])
         if n is None:
-            return sorted(self.iteritems(), key=get_set_len)
-        return nlargest(n, self.iteritems(), key=get_set_len)
+            return sorted(self.iteritems(), key=count_func, reverse=reverse)
+        if reverse:
+            return nsmallest(n, self.iteritems(), key=count_func)
+        else:
+            return nlargest(n, self.iteritems(), key=count_func)
 
     def elements(self):
-        '''Iterator over elements repeating each as many times as its count.
-        This relies on values to be iterable and keys to be integers.
+        """ Iterator over elements repeating each as many times as its count.
+            This relies on values to be iterable and keys to be integers.
 
         >>> c = PivotCounter('ABCABC')
         >>> sorted(c.elements())
@@ -64,35 +85,59 @@ class PivotCounter(dict):
         If an element's count has been set to zero or is a negative number,
         elements() will ignore it.
 
-        '''
+        """
         for count, elem_set in self.iteritems():
             for elem in elem_set:
                 for _ in repeat(None, count):
                     yield elem
 
     def counter_items(self):
-        '''Iterator over (element, count) tuples of underlying Counter.
-        This only relies on values to be iterable.
+        """ Iterator over (element, count) tuples of underlying Counter.
+            This only relies on values to be iterable.
 
         >>> c = PivotCounter('ABCABC')
         >>> sorted(c.counter_items())
         [('A', 2), ('B', 2), ('C', 2)]
 
-        '''
+        """
         for count, elem_set in self.iteritems():
             for elem in elem_set:
                 yield (elem, count)
 
     def unpivot(self, onerror=None):
-        'Turn back into a Counter'
-        if onerror:
-            raise NotImplementedError("Pivot verification not (yet) implemented.")
-            "Verify, that no key overwrites happen"
-        return Counter(dict(self.counter_items()))
+        """ Turn the PivotCounter back into a Counter.
+        >>> PivotCounter('ABCABC').unpivot()
+        Counter({'A': 2, 'C': 2, 'B': 2})
+        >>> Counter("lollofant") == PivotCounter("lollofant").unpivot()
+        True
+        >>> PivotCounter("lollofant").unpivot(onerror=True)
+        Traceback (most recent call last):
+        ...
+        NotImplementedError: Pivot verification not (yet) implemented.
 
-    def counter(self):
-        """ Counts are the lengths of values. """
-        return Counter(dict(self.counter_items()))
+        """
+        if onerror:
+            "Verify, that no key overwrites happen"
+            raise NotImplementedError("Pivot verification not (yet) implemented.")
+
+        return Counter(self.elements())
+
+    def distribution(self, count_func=len):
+        """ A Counters whose counts are the lengths of my values.
+
+        >>> p = PivotCounter('ABCABC')
+        >>> p.distribution()
+        Counter({2: 3})
+        >>> p.distribution(count_func=lambda s: 20 - len(s))
+        Counter({2: 17})
+
+        """
+        def iter_counts():
+            for count, elem_set in self.iteritems():
+                for _ in repeat(None, count_func(elem_set)):
+                    yield count
+
+        return Counter(iter_counts())
 
     # Override dict methods where the meaning changes for Counter objects.
 
@@ -106,23 +151,22 @@ class PivotCounter(dict):
 
         Source can be a dictionary or Counter instance or another PivotCounter.
 
-        >>> c = PivotCounter('which')
-        >>> c.update('witch')           # add elements from another iterable
         >>> d = PivotCounter('watch')
-        >>> c.update(d)                 # add elements from another counter
-        >>> c['h']                      # four 'h' in which, witch, and watch
-        4
+        >>> d.update('boofittii')          # add in elements via another counter-like
+        >>> d                              #  v---- notice the now existing duplicate -----v
+        PivotCounter({3: set(['i']), 2: set(['t', 'o']), 1: set(['a', 'c', 'b', 'f', 'h', 't', 'w'])})
+        >>> PivotCounter(d.counter())      # to fix it regenerate the PivotCounter
+        PivotCounter()
+        >>> c = PivotCounter('which')
+        >>> c.update(PivotCounter('boof')) # update the dict way
+        >>> c
+        PivotCounter({2: set(['o']), 1: set(['b', 'f'])})
 
         '''
         if iterable is not None:
             if isinstance(iterable, PivotCounter):
-                if self:
-                    self_get = self.setdefault
-                    for elem, count in iterable.iteritems():
-                        self[elem] = self_get(elem, set()).update(count)
-                else:
-                    dict.update(self, iterable) # fast path when counter is empty
-            elif hasattr(iterable, 'iteritems'):
+                dict.update(self, iterable) # fast path when counter is empty
+            elif hasattr(iterable, 'iteritems'): # assumed Counters and dicts
                 for elem, count in iterable.iteritems():
                     self.setdefault(count, set()).add(elem)
             else: # slow path (by now)
@@ -172,7 +216,7 @@ class PivotCounter(dict):
         '''
         if not isinstance(other, PivotCounter):
             return NotImplemented
-        return PivotCounter(self.counter() + other.counter())
+        return PivotCounter(self.unpivot() + other.unpivot())
 
     def __sub__(self, other):
         ''' Subtract the underlying Counters.
@@ -184,7 +228,7 @@ class PivotCounter(dict):
         '''
         if not isinstance(other, PivotCounter):
             return NotImplemented
-        return PivotCounter(self.counter() - other.counter())
+        return PivotCounter(self.unpivot() - other.unpivot())
 
     def __or__(self, other):
         '''Union is about the easiest to convert, but it does not
