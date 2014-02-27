@@ -182,8 +182,11 @@ class PivotCounter(dict):
                 dict.update(self, iterable) # fast path when counter is empty
             elif hasattr(iterable, 'iteritems'): # assumed Counters and dicts
                 for elem, count in iterable.iteritems():
-                    self.setdefault(count, set()).add(elem)
-            else: # slow path (by now)
+                    try: # a normal Counter entry
+                        self.setdefault(count, set()).add(elem)
+                    except TypeError: # another PivotCounter?
+                        self.setdefault(elem, set()).update(count)
+            else: # slow mem eater path (by now)
                 self.update(Counter(iterable))
         if kwds:
             self.update(kwds)
@@ -223,14 +226,14 @@ class PivotCounter(dict):
 
     def __repr__(self):
         """ Output like defaultdict or other dict variants.
-            But copy-pasting the String will not work.
+            Thanks to the try-catch behaviour of the update
+            method, PivotCounters can be copy-pasted.
 
         >>> PivotCounter('bumm')
         PivotCounter({1: ['b', 'u'], 2: ['m']})
         >>> PivotCounter({1: ['b', 'u'], 2: ['m']})
-        Traceback (most recent call last):
-        ...
-        TypeError: unhashable type: 'list'
+        PivotCounter({1: ['b', 'u'], 2: ['m']})
+
         """
         def stable_output():
             for count, elem_set in self.iteritems():
