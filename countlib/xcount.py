@@ -37,6 +37,11 @@ class ExtremeCounter(Counter):
                 pivot[count] = [thing]
         return pivot
 
+    @classmethod
+    def fromkeys(cls, iterable, v=0):
+        """ Init a constant Counter. """
+        return cls(dict.fromkeys(iterable, v))
+
 
 class ListCounter(Counter):
     """ A Counter that uses list instead of int objects to count. """

@@ -1,3 +1,4 @@
+""" Pivot table of a Counter. """
 from collections import Counter
 
 from operator import itemgetter
@@ -62,12 +63,12 @@ class PivotCounter(dict):
                 for _ in repeat(None, count):
                     yield elem
 
-    def counter_elements(self):
+    def counter_items(self):
         '''Iterator over (element, count) tuples of underlying Counter.
         This only relies on values to be iterable.
 
         >>> c = Counter('ABCABC')
-        >>> sorted(c.counter_elements())
+        >>> sorted(c.counter_items())
         ['A', 'A', 'B', 'B', 'C', 'C']
 
         '''
@@ -75,20 +76,23 @@ class PivotCounter(dict):
             for elem in elem_set:
                 yield (elem, count)
 
-    def counter(self, safe=False):
+    def unpivot(self, onerror=None):
         'Turn back into a Counter'
-        if safe:
+        if onerror:
             raise NotImplementedError("Pivot verification not (yet) implemented.")
-            "Verify, that no key overwrites take place."
-        return Counter(dict(self.counter_elements()))
+            "Verify, that no key overwrites happen"
+        return Counter(dict(self.counter_items()))
 
+    def counter(self):
+        """ Counts are the lengths of values. """
+        return Counter(dict(self.counter_items()))
 
     # Override dict methods where the meaning changes for Counter objects.
 
-    @classmethod
-    def fromkeys(cls, iterable, v=None):
-        raise NotImplementedError(
-            'Counter.fromkeys() is undefined.  Use Counter(iterable) instead.')
+    #@classmethod
+    #def fromkeys(cls, iterable, v=None):
+        #raise NotImplementedError(
+            #'Counter.fromkeys() is undefined.  Use Counter(iterable) instead.')
 
     def update(self, iterable=None, **kwds):
         '''Like Counter.update() but union sets instead of adding counts.
@@ -112,9 +116,8 @@ class PivotCounter(dict):
                 else:
                     dict.update(self, iterable) # fast path when counter is empty
             elif hasattr(iterable, 'iteritems'):
-                def pivot(item):
-                    self.setdefault(item[1], set()).add(item[0])
-                map(pivot, iterable.iteritems())
+                for elem, count in iterable.iteritems():
+                    self.setdefault(count, set()).add(elem)
             else: # slow path (by now)
                 self.update(Counter(iterable))
         if kwds:
@@ -185,7 +188,7 @@ class PivotCounter(dict):
             return NotImplemented
         result = PivotCounter()
         for elem in set(self) | set(other):
-            newcount = self[elem] - other[elem]
+            newcount = self[elem] | other[elem]
             if newcount:
                 result[elem] = newcount
         return result
