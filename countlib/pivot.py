@@ -11,9 +11,10 @@ class PivotCounter(dict):
     are stored in sets as dictionary values.  Where integer
     values make sense, sets are replaced by their lenght.
 
-    >>> Counter('zyzygy')
-    Counter({'y': 3, 'z': 2, 'g': 1})
-    >>> SetCounter(Counter('zyzygy'))
+    >>> PivotCounter('zyzygy')
+    PivotCounter({1: set(['g']), 2: set(['z']), 3: set(['y'])})
+    >>> PivotCounter(Counter('zyzygy'))
+    PivotCounter({1: set(['g']), 2: set(['z']), 3: set(['y'])})
 
     '''
 
@@ -21,10 +22,10 @@ class PivotCounter(dict):
         '''Create a new, empty PivotCounter object. And if given, count elements
         from an input Counter or dict. Or, initialize from another PivotCounter.
 
-        >>> c = Counter()                           # a new, empty counter
-        >>> c = Counter('gallahad')                 # a new counter from an iterable
-        >>> c = Counter({'a': 4, 'b': 2})           # a new counter from a mapping
-        >>> c = Counter(a=4, b=2)                   # a new counter from keyword args
+        >>> c = PivotCounter()                   # a new, empty counter
+        >>> c = PivotCounter('gallahad')         # a new counter from an iterable
+        >>> c = PivotCounter({'a': 4, 'b': 2})   # a new counter from a mapping
+        >>> c = PivotCounter(a=4, b=2)           # a new counter from keyword args
 
         '''
         self.update(iterable, **kwds)
@@ -99,9 +100,9 @@ class PivotCounter(dict):
 
         Source can be a dictionary or Counter instance or another PivotCounter.
 
-        >>> c = Counter('which')
+        >>> c = PivotCounter('which')
         >>> c.update('witch')           # add elements from another iterable
-        >>> d = Counter('watch')
+        >>> d = PivotCounter('watch')
         >>> c.update(d)                 # add elements from another counter
         >>> c['h']                      # four 'h' in which, witch, and watch
         4
@@ -156,8 +157,8 @@ class PivotCounter(dict):
         '''Add two pivots by adding the underlying Counters.
         Slow by now, and may be hard to optimize.
 
-        >>> PivotCounter(Counter('abbb')) + PivotCounter(Counter('bcc'))
-        PivotCounter({'b': 4, 'c': 2, 'a': 1})
+        >>> PivotCounter('abbb') + PivotCounter('bcc')
+        PivotCounter({1: set(['a']), 2: set(['c']), 4: set(['b'])})
 
 
         '''
@@ -168,8 +169,8 @@ class PivotCounter(dict):
     def __sub__(self, other):
         ''' Subtract the underlying Counters.
 
-        >>> PivotCounter'abbbc') - PivotCounter'bccd')
-        PivotCounter{'b': 2, 'a': 1})
+        >>> PivotCounter('abbbc') - PivotCounter('bccd')
+        PivotCounter({'b': 2, 'a': 1})
 
         '''
         if not isinstance(other, PivotCounter):
