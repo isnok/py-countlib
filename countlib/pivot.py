@@ -43,6 +43,7 @@ class PivotCounter(dict):
         PivotCounter({2: ['b'], 4: ['a']})
 
         """
+        dict.__init__(self)
         self.update(iterable, **kwds)
 
     def __missing__(self, key):
@@ -98,7 +99,42 @@ class PivotCounter(dict):
                 for _ in repeat(None, count):
                     yield elem
 
-    def unpivot(self, onerror=None):
+    def iter_dirty(self):
+        """ Iterator over the overlapping value pairs, if any.
+
+        >>> list(PivotCounter('ABCABC').iter_dirty())
+        []
+        >>> a = PivotCounter('aa')
+        >>> a.update(PivotCounter('a'))
+        >>> list(a.iter_dirty())
+        [set(['a'])]
+        """
+        acc = set()
+        sec = acc.intersection
+        add = acc.update
+        for elem_set in self.itervalues():
+            cur = sec(elem_set)
+            if cur:
+                yield cur
+            add(elem_set)
+
+    def is_clean(self):
+        """ True if no values overlap. Reliably returns a boolean.
+
+        >>> PivotCounter(range(3)).is_clean()
+        True
+        >>> a = PivotCounter('aa')
+        >>> a.update(PivotCounter('a'))
+        >>> a.is_clean()
+        False
+        """
+        try:
+            next(self.iter_dirty())
+            return False
+        except StopIteration:
+            return True
+
+    def unpivot(self, check=None, clean=None):
         """ Turn the PivotCounter back into a Counter.
         >>> PivotCounter().unpivot()
         Counter()
@@ -106,16 +142,20 @@ class PivotCounter(dict):
         Counter({'A': 2, 'C': 2, 'B': 2})
         >>> Counter("lollofant") == PivotCounter("lollofant").unpivot()
         True
-        >>> PivotCounter("lollofant").unpivot(onerror=True)
-        Traceback (most recent call last):
-        ...
-        NotImplementedError: Pivot verification not (yet) implemented.
+        >>> fant = PivotCounter("lollofant")
+        >>> fant.unpivot(clean=True) == fant.unpivot(check=True)
+        True
+        >>> for x in xrange(5, 99):
+        ...     fant[x] = set(['B'])
+        >>> fant.unpivot(clean=True) == fant.unpivot(check=True)
+        False
 
         """
-        if onerror:
-            "Verify, that no key overwrites happen"
-            raise NotImplementedError("Pivot verification not (yet) implemented.")
-
+        if clean or (check and self.is_clean()):
+            counter = self.__unpivot__()
+            for elem, cnt in self.unpivot_items():
+                counter[elem] = cnt
+            return counter
         return self.__unpivot__(self.elements())
 
     def unpivot_items(self):
@@ -202,7 +242,6 @@ class PivotCounter(dict):
                     except TypeError: # another PivotCounter?
                         self.setdefault(elem, set()).update(count)
             else: # slow mem eater path (by now)
-                self.__unpivot__ = Counter
                 self.update(Counter(iterable))
         if kwds:
             self.update(kwds)
@@ -308,6 +347,28 @@ class PivotCounter(dict):
         if not isinstance(other, PivotCounter):
             return NotImplemented
         return PivotCounter(self.unpivot() - other.unpivot())
+
+    def add(self, other):
+        ''' Add the underlying Counters without discarding
+            non-positive counts. Other than it's counterpart
+            the Counter, a new PivotCounter is returned from this
+            method.
+
+        >>> a, b = PivotCounter('abbbc'), PivotCounter('bccd')
+        >>> a.subtract(b)
+        PivotCounter({-1: ['c', 'd'], 1: ['a'], 2: ['b']})
+        >>> a.subtract(b).add("xxx")
+        NotImplemented
+        >>> a.subtract(b).add(PivotCounter("xxx"))
+        PivotCounter({1: ['a'], 2: ['b'], 3: ['x']})
+        '''
+        if not isinstance(other, PivotCounter):
+            return NotImplemented
+        otherc = other.unpivot()
+        result = self.unpivot()
+        for k, v in otherc.iteritems():
+            result[k] += v
+        return PivotCounter(result)
 
     def subtract(self, other):
         ''' Subtract the underlying Counters without discarding
