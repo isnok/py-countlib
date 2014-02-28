@@ -31,6 +31,11 @@ class ExtremeCounter(Counter):
     >>> y.subtract(ExtremeCounter.fromkeys('zab.', 3))
     >>> y
     ExtremeCounter({'.': -2, 'a': -2, 'b': -3, 'y': 2, 'z': -3})
+    >>> y.add(ExtremeCounter.fromkeys('zab.', 3))
+    >>> y
+    ExtremeCounter({'.': 1, 'a': 1, 'b': 0, 'y': 2, 'z': 0})
+    >>> y + Counter()
+    ExtremeCounter({'.': 1, 'a': 1, 'y': 2})
 
     """
 
@@ -200,6 +205,10 @@ class ExtremeCounter(Counter):
         ExtremeCounter({'a': 1, 'b': 4, 'c': 2})
         >>> ExtremeCounter('abbb') + Counter('bcc')
         ExtremeCounter({'a': 1, 'b': 4, 'c': 2})
+        >>> ExtremeCounter('aaa') + ExtremeCounter.fromkeys('a', -1)
+        ExtremeCounter({'a': 2})
+        >>> ExtremeCounter('aaa') + ExtremeCounter.fromkeys('a', -3)
+        ExtremeCounter()
 
         """
         if not isinstance(other, Counter):
@@ -213,7 +222,6 @@ class ExtremeCounter(Counter):
 
     def __sub__(self, other):
         """ Subtract count, but keep only results with positive counts.
-            Union keys for the case of negative subtractors.
 
         >>> ExtremeCounter('abbbc') - ExtremeCounter('bccd')
         ExtremeCounter({'a': 1, 'b': 2})
@@ -229,6 +237,34 @@ class ExtremeCounter(Counter):
             if newcount > 0:
                 result[elem] = newcount
         return result
+
+    def add(self, other):
+        """ Add in Counts without discarding non-positive.
+            The (strangely missing) eqivalent of Counter.subtract.
+            Iteration is limited to the key set of other, so default
+            values that are not iterated over will be skipped.
+
+        >>> a = ExtremeCounter('abbb')
+        >>> a
+        ExtremeCounter({'a': 1, 'b': 3})
+        >>> a.add(ExtremeCounter('bcc'))
+        >>> a
+        ExtremeCounter({'a': 1, 'b': 4, 'c': 2})
+        >>> a + ExtremeCounter.fromkeys('ab', -12)
+        ExtremeCounter({'c': 2})
+        >>> a.add(ExtremeCounter.fromkeys('ab', -12))
+        >>> a
+        ExtremeCounter({'a': -11, 'b': -8, 'c': 2})
+        >>> a.add(a)
+        >>> a.subtract(a)
+        >>> a
+        ExtremeCounter({'a': 0, 'b': 0, 'c': 0})
+
+        """
+        if not isinstance(other, Counter):
+            return NotImplemented
+        for elem in set(other):
+            self[elem] += other[elem]
 
     def __or__(self, other):
         """ Union is the maximum of value in either of the input counters.

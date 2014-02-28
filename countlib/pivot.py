@@ -21,6 +21,10 @@ class PivotCounter(dict):
     True
     >>> PivotCounter('lllaaoohe') == PivotCounter(set('lalalohoe'))
     False
+    >>> PivotCounter('test').subtract(Counter('tst'))
+    NotImplemented
+    >>> PivotCounter('test').subtract(PivotCounter('tst'))
+    PivotCounter({0: ['s', 't'], 1: ['e']})
 
     """
 
@@ -265,8 +269,10 @@ class PivotCounter(dict):
     #       c += PivotCounter()
 
     def __add__(self, other):
-        '''Add two pivots by adding the underlying Counters.
-        Slow by now, and may be hard to optimize.
+        """ Add two pivots by adding the underlying Counters.
+            Non-zero counts are discarded.  Not optimied, so
+            keep the original ExtremeCounter around if you want
+            to be faster or save memory.
 
         >>> PivotCounter('abbb') + PivotCounter('bcc')
         PivotCounter({1: ['a'], 2: ['c'], 4: ['b']})
@@ -274,22 +280,38 @@ class PivotCounter(dict):
         PivotCounter({1: ['a'], 2: ['c'], 4: ['b']})
 
 
-        '''
+        """
         if not isinstance(other, PivotCounter):
             return NotImplemented
         return PivotCounter(self.unpivot() + other.unpivot())
 
     def __sub__(self, other):
-        ''' Subtract the underlying Counters.
+        """ Subtract the underlying Counters discarding
+            non-positive counts and return a new PivotCounter.
 
         >>> PivotCounter('abbbc') - PivotCounter('bccd')
         PivotCounter({1: ['a'], 2: ['b']})
         >>> PivotCounter(Counter('abbbc') - Counter('bccd'))
         PivotCounter({1: ['a'], 2: ['b']})
-        '''
+        """
         if not isinstance(other, PivotCounter):
             return NotImplemented
         return PivotCounter(self.unpivot() - other.unpivot())
+
+    def subtract(self, other):
+        ''' Subtract the underlying Counters without discarding
+            non-positive counts. Other than it's counterpart
+            the Counter, a new PivotCounter is returned from this
+            method.
+
+        >>> PivotCounter('abbbc').subtract(PivotCounter('bccd'))
+        PivotCounter({-1: ['c', 'd'], 1: ['a'], 2: ['b']})
+        '''
+        if not isinstance(other, PivotCounter):
+            return NotImplemented
+        result = self.unpivot()
+        result.subtract(other.unpivot())
+        return PivotCounter(result)
 
     def __or__(self, other):
         '''Union is about the easiest to convert, but it does not
