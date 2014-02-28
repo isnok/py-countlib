@@ -9,11 +9,11 @@ class ExtremeCounter(Counter):
     """ Buffed Counter class. Extreme usefulness to be expected.
 
     >>> ExtremeCounter('zyzygy')
-    ExtremeCounter({'g': 1, 'z': 2, 'z': 3})
+    ExtremeCounter({'g': 1, 'y': 3, 'z': 2})
     >>> x = ExtremeCounter("yay? nice!! this thing works!!")
     >>> x.most_common_counts(1)
     [(' ', 4), ('!', 4)]
-    >>> x.most_common_counts(1, reverse=True)
+    >>> x.most_common_counts(1, inverse=True)
     [('a', 1), ('c', 1), ('e', 1), ('g', 1), ('k', 1), ('o', 1), ('w', 1), ('r', 1), ('?', 1)]
 
     """
@@ -28,12 +28,12 @@ class ExtremeCounter(Counter):
         >>> p = ExtremeCounter('abracadabra!')
         >>> p.most_common(3)
         [('a', 5), ('b', 2), ('r', 2)]
-        >>> p.most_common(2, reverse=True)
+        >>> p.most_common(2, inverse=True)
         [('!', 1), ('c', 1)]
         >>> p.most_common(2, count_func=lambda i: -i[1])
         [('!', 1), ('c', 1)]
         >>> p.most_common(2, count_func=lambda i: -i[1], inverse=True)
-        [('!', 1), ('c', 1)]
+        [('a', 5), ('b', 2)]
 
         """
         if count_func is None:
@@ -46,24 +46,46 @@ class ExtremeCounter(Counter):
             return nlargest(n, self.iteritems(), key=count_func)
 
 
-    def iter_most_common_counts(self, limit, *args, **kw):
-        for thing, count in self.most_common(*args, **kw):
-            if "last_count" in locals():
-                if count != last_count:
-                    limit -= 1
-                    last_count = count
-            else:
-                last_count = count
-            if limit <= 0:
-                break
-            yield (thing, count)
+    def most_common_counts(self, n, *args, **kw):
+        """ Get all items with the n highest counts.
+            Much like most_common but limit is applied to values (counts).
 
-    def most_common_counts(self, *args, **kw):
-        """ get the most common counts as a list of (elem, cnt) tuples.
-            like most_common() but limit is applied to values (counts) """
-        return list(self.iter_most_common_counts(*args, **kw))
+        >>> x = ExtremeCounter("yay? nice!! this thing works!")
+        >>> x.update("etsttseststttsetsetse ")
+        >>> x.most_common_counts(1)
+        [('t', 11)]
+        >>> x.most_common_counts(5)
+        [('t', 11), ('s', 9), ('e', 6), (' ', 5), ('i', 3), ('!', 3)]
+
+        """
+        def limit_most_common(limit):
+            for elem, count in self.most_common(*args, **kw):
+                if not "last_count" in locals():
+                    last_count = count
+                else:
+                    if count != last_count:
+                        limit -= 1
+                        last_count = count
+                if limit <= 0:
+                    break
+                yield (elem, count)
+
+        return list(limit_most_common(n))
 
     def pivot(self):
+        """
+
+        >>> x = ExtremeCounter("yay? nice!! this thing works!")
+        >>> x.update("etsttseststttsetsetse ")
+        >>> x.pivot_counter().pivot()
+        PivotCounter({1: [5, 6, 9, 11], 2: [3], 3: [2], 8: [1]})
+        >>> x.pivot() + x.pivot()
+        PivotCounter({10: [' '], 12: ['e'], 18: ['s'], 22: ['t'], 2: ['?', 'a', 'c', 'g', 'k', 'o', 'r', 'w'], 4: ['h', 'n', 'y'], 6: ['!', 'i']})
+        >>> ExtremeCounter("lollofant!!").pivot() - ExtremeCounter("trollofant").pivot()
+        PivotCounter({1: ['l'], 2: ['!']})
+        >>> ExtremeCounter("lollofant!!").pivot() + ExtremeCounter("trollofant").pivot()
+        PivotCounter({1: ['r'], 2: ['!', 'a', 'f', 'n'], 3: ['t'], 4: ['o'], 5: ['l']})
+        """
         return PivotCounter(self)
 
     def pivot_counter(self):
@@ -72,11 +94,11 @@ class ExtremeCounter(Counter):
     def pivold(self):
         """ return the pivot table as a counter  """
         pivot = ListCounter()
-        for thing, count in self.iteritems():
+        for elem, count in self.iteritems():
             if count in pivot:
-                pivot[count].append(thing)
+                pivot[count].append(elem)
             else:
-                pivot[count] = [thing]
+                pivot[count] = [elem]
         return pivot
 
     @classmethod
@@ -113,13 +135,3 @@ class ListCounter(Counter):
 if __name__ == '__main__':
     import doctest
     print doctest.testmod()
-
-    x = ExtremeCounter("yay? nice!! this thing works!")
-    x.update("etsttseststttsetsetse ")
-    print x.most_common_counts(1)
-    print x.most_common_counts(5)
-    print x.pivot_counter().pivot()
-    print x.pivot() + x.pivot()
-    ExtremeCounter("lollofant!!").pivot() - ExtremeCounter("trollofant").pivot()
-    ExtremeCounter("lollofant!!").pivot() + ExtremeCounter("trollofant").pivot()
-
