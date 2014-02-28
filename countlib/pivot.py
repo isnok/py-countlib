@@ -145,9 +145,9 @@ class PivotCounter(dict):
             The values can be constructed from the keys via the v_func argument.
 
         >>> PivotCounter.fromkeys('watch')
-        PivotCounter({'a': [], 'h': [], 'c': [], 't': [], 'w': []})
+        PivotCounter({'a': [], 'c': [], 'h': [], 't': [], 'w': []})
         >>> PivotCounter.fromkeys('watchhhh')
-        PivotCounter({'a': [], 'h': [], 'c': [], 't': [], 'w': []})
+        PivotCounter({'a': [], 'c': [], 'h': [], 't': [], 'w': []})
         >>> PivotCounter.fromkeys('not supplying a v_func means nothing.').unpivot()
         Counter()
         >>> PivotCounter.fromkeys([1,2,3], lambda n: set(range(n)))
@@ -241,7 +241,7 @@ class PivotCounter(dict):
 
         if not self:
             return '%s()' % self.__class__.__name__
-        items = ', '.join(stable_output())
+        items = ', '.join(sorted(stable_output()))
         return '%s({%s})' % (self.__class__.__name__, items)
 
 
