@@ -4,6 +4,7 @@ from pivot import PivotCounter
 
 from operator import itemgetter
 from heapq import nlargest, nsmallest
+from itertools import ifilter
 
 class ExtremeCounter(Counter):
     """ Buffed Counter class. Extreme usefulness to be expected.
@@ -120,7 +121,7 @@ class ExtremeCounter(Counter):
         >>> x
         ExtremeCounter({'b': 50, 'm': 50, 'u': 50})
         >>> x + x
-        Counter({'m': 100, 'b': 100, 'u': 100})
+        ExtremeCounter({'b': 100, 'm': 100, 'u': 100})
         """
         return cls(dict.fromkeys(iterable, v))
 
@@ -143,6 +144,94 @@ class ExtremeCounter(Counter):
         items = ', '.join(sorted(stable_output()))
         return '%s({%s})' % (self.__class__.__name__, items)
 
+
+    # Multiset-style mathematical operations discussed in:
+    #       Knuth TAOCP Volume II section 4.6.3 exercise 19
+    #       and at http://en.wikipedia.org/wiki/Multiset
+    #
+    # Outputs guaranteed to only include positive counts.
+    # To strip negative and zero counts, add-in an empty counter:
+    #
+    #       c += ExtremeCounter()
+
+    def __add__(self, other):
+        """ Union the keys, add the counts.
+
+        >>> ExtremeCounter('abbb') + ExtremeCounter('bcc')
+        ExtremeCounter({'a': 1, 'b': 4, 'c': 2})
+        >>> ExtremeCounter('abbb') + Counter('bcc')
+        ExtremeCounter({'a': 1, 'b': 4, 'c': 2})
+
+        """
+        if not isinstance(other, Counter):
+            return NotImplemented
+        result = ExtremeCounter()
+        for elem in set(self) | set(other):
+            newcount = self[elem] + other[elem]
+            if newcount > 0:
+                result[elem] = newcount
+        return result
+
+    def __sub__(self, other):
+        """ Subtract count, but keep only results with positive counts.
+            Union keys for the case of negative subtractors.
+
+        >>> ExtremeCounter('abbbc') - ExtremeCounter('bccd')
+        ExtremeCounter({'a': 1, 'b': 2})
+        >>> ExtremeCounter('abbbc') - Counter('bccd')
+        ExtremeCounter({'a': 1, 'b': 2})
+
+        """
+        if not isinstance(other, Counter):
+            return NotImplemented
+        result = ExtremeCounter()
+        for elem in set(self) | set(other):
+            newcount = self[elem] - other[elem]
+            if newcount > 0:
+                result[elem] = newcount
+        return result
+
+    def __or__(self, other):
+        """ Union is the maximum of value in either of the input counters.
+
+        >>> ExtremeCounter('abbb') | ExtremeCounter('bcc')
+        ExtremeCounter({'a': 1, 'b': 3, 'c': 2})
+        >>> ExtremeCounter('abbb') | Counter('bcc')
+        ExtremeCounter({'a': 1, 'b': 3, 'c': 2})
+
+        """
+        if not isinstance(other, Counter):
+            return NotImplemented
+        _max = max
+        result = ExtremeCounter()
+        for elem in set(self) | set(other):
+            newcount = _max(self[elem], other[elem])
+            if newcount > 0:
+                result[elem] = newcount
+        return result
+
+    def __and__(self, other):
+        """ Intersection is the minimum of corresponding counts.
+
+        >>> ExtremeCounter('abbb') & ExtremeCounter('bcc')
+        ExtremeCounter({'b': 1})
+        >>> ExtremeCounter('abbb') & Counter('bcc')
+        ExtremeCounter({'b': 1})
+        >>> Counter('abbb') & ExtremeCounter('bcc')
+        Counter({'b': 1})
+
+        """
+        if not isinstance(other, Counter):
+            return NotImplemented
+        _min = min
+        result = ExtremeCounter()
+        if len(self) < len(other):
+            self, other = other, self
+        for elem in ifilter(self.__contains__, other):
+            newcount = _min(self[elem], other[elem])
+            if newcount > 0:
+                result[elem] = newcount
+        return result
 
 if __name__ == '__main__':
     import doctest

@@ -50,8 +50,10 @@ class PivotCounter(dict):
         return set()
 
     def most_common(self, n=None, count_func=None, reverse=False):
-        """ List the n most common elements and their counts from the most
-            common to the least.  If n is None, then list all element counts.
+        """ List the n biggest bags and their counts from the most common
+            to the least. If n is None, then list all bags and counts.
+            The sorting can be reversed and customized via the arguments
+            reverse and count_func.
 
         >>> p = PivotCounter('abracadabra!')
         >>> p.most_common(3)
@@ -91,19 +93,6 @@ class PivotCounter(dict):
                 for _ in repeat(None, count):
                     yield elem
 
-    def counter_items(self):
-        """ Iterator over (element, count) tuples of underlying Counter.
-            This only relies on values to be iterable.
-
-        >>> c = PivotCounter('ABCABC')
-        >>> sorted(c.counter_items())
-        [('A', 2), ('B', 2), ('C', 2)]
-
-        """
-        for count, elem_set in self.iteritems():
-            for elem in elem_set:
-                yield (elem, count)
-
     def unpivot(self, onerror=None):
         """ Turn the PivotCounter back into a Counter.
         >>> PivotCounter('ABCABC').unpivot()
@@ -122,13 +111,30 @@ class PivotCounter(dict):
 
         return Counter(self.elements())
 
-    def distribution(self, count_func=len):
-        """ A Counters whose counts are the lengths of my values.
+    def unpivot_items(self):
+        """ Iterator over (element, count) tuples of underlying Counter.
+            This only relies on values to be iterable.
+
+        >>> c = PivotCounter('ABCABC')
+        >>> sorted(c.unpivot_items())
+        [('A', 2), ('B', 2), ('C', 2)]
+        >>> sorted(c.unpivot_items()) == sorted(Counter('ABCABC').items())
+        True
+
+        """
+        for count, elem_set in self.iteritems():
+            for elem in elem_set:
+                yield (elem, count)
+
+    def count_sets(self, count_func=len):
+        """ By default, a Counter whose counts are the lengths of this
+            PivotCounters sets. count_func is called once for every value
+            and is required to return an integer.
 
         >>> p = PivotCounter('ABCABC')
-        >>> p.distribution()
+        >>> p.count_sets()
         Counter({2: 3})
-        >>> p.distribution(count_func=lambda s: 20 - len(s))
+        >>> p.count_sets(count_func=lambda s: 20 - len(s))
         Counter({2: 17})
 
         """
