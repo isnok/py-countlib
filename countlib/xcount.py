@@ -73,11 +73,11 @@ class ExtremeCounter(Counter):
         return list(limit_most_common(n))
 
     def pivot(self):
-        """
+        """ The pivot table of the Counter.
 
         >>> x = ExtremeCounter("yay? nice!! this thing works!")
         >>> x.update("etsttseststttsetsetse ")
-        >>> x.pivot_counter().pivot()
+        >>> x.transpose().pivot()
         PivotCounter({1: [5, 6, 9, 11], 2: [3], 3: [2], 8: [1]})
         >>> x.pivot() + x.pivot()
         PivotCounter({10: [' '], 12: ['e'], 18: ['s'], 22: ['t'], 2: ['?', 'a', 'c', 'g', 'k', 'o', 'r', 'w'], 4: ['h', 'n', 'y'], 6: ['!', 'i']})
@@ -88,7 +88,26 @@ class ExtremeCounter(Counter):
         """
         return PivotCounter(self)
 
-    def pivot_counter(self):
+    def transpose(self):
+        """ Use my counts as keys, and as values the list of elements,
+            that have that count.
+
+        >>> x = ExtremeCounter("yay? nice!! this thing works!")
+        >>> x.update("etsttseststttsetsetse ")
+        >>> old_x = None
+        >>> while old_x != x:
+        ...     old_x = x
+        ...     x = x.transpose()
+        ...     print old_x
+        ExtremeCounter({' ': 5, '!': 3, '?': 1, 'a': 1, 'c': 1, 'e': 6, 'g': 1, 'h': 2, 'i': 3, 'k': 1, 'n': 2, 'o': 1, 'r': 1, 's': 9, 't': 11, 'w': 1, 'y': 2})
+        ExtremeCounter({11: 1, 1: 8, 2: 3, 3: 2, 5: 1, 6: 1, 9: 1})
+        ExtremeCounter({1: 4, 2: 1, 3: 1, 8: 1})
+        ExtremeCounter({1: 3, 4: 1})
+        ExtremeCounter({1: 1, 3: 1})
+        ExtremeCounter({1: 2})
+        ExtremeCounter({2: 1})
+        ExtremeCounter({1: 1})
+        """
         return ExtremeCounter(self.itervalues())
 
     def pivold(self):
