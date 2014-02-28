@@ -27,6 +27,7 @@ class PivotCounter(dict):
     PivotCounter({0: ['s', 't'], 1: ['e']})
 
     """
+    __unpivot__ = Counter
 
     def __init__(self, iterable=None, **kwds):
         """ Create a new, empty PivotCounter object. And if given, count elements
@@ -99,6 +100,8 @@ class PivotCounter(dict):
 
     def unpivot(self, onerror=None):
         """ Turn the PivotCounter back into a Counter.
+        >>> PivotCounter().unpivot()
+        Counter()
         >>> PivotCounter('ABCABC').unpivot()
         Counter({'A': 2, 'C': 2, 'B': 2})
         >>> Counter("lollofant") == PivotCounter("lollofant").unpivot()
@@ -113,7 +116,7 @@ class PivotCounter(dict):
             "Verify, that no key overwrites happen"
             raise NotImplementedError("Pivot verification not (yet) implemented.")
 
-        return Counter(self.elements())
+        return self.__unpivot__(self.elements())
 
     def unpivot_items(self):
         """ Iterator over (element, count) tuples of underlying Counter.
@@ -189,14 +192,17 @@ class PivotCounter(dict):
         """
         if iterable is not None:
             if isinstance(iterable, PivotCounter):
+                self.__unpivot__ = iterable.__unpivot__
                 dict.update(self, iterable) # fast path when counter is empty
             elif hasattr(iterable, 'iteritems'): # assumed Counters and dicts
+                self.__unpivot__ = iterable.__class__
                 for elem, count in iterable.iteritems():
                     try: # a normal Counter entry
                         self.setdefault(count, set()).add(elem)
                     except TypeError: # another PivotCounter?
                         self.setdefault(elem, set()).update(count)
             else: # slow mem eater path (by now)
+                self.__unpivot__ = Counter
                 self.update(Counter(iterable))
         if kwds:
             self.update(kwds)

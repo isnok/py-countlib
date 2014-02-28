@@ -1,7 +1,6 @@
 """ Counters strike! """
 from collections import Counter
 from pivot import PivotCounter
-from coolpivot import CoolPivotCounter
 
 from operator import itemgetter
 from heapq import nlargest, nsmallest
@@ -12,17 +11,6 @@ class ExtremeCounter(Counter):
 
     >>> ExtremeCounter('zyzygy')
     ExtremeCounter({'g': 1, 'y': 3, 'z': 2})
-    >>> x = ExtremeCounter("yay? nice!! this thing works!!")
-    >>> x.most_common_counts(1)
-    [(' ', 4), ('!', 4)]
-    >>> x.most_common_counts(1, inverse=True)
-    [('a', 1), ('c', 1), ('e', 1), ('g', 1), ('k', 1), ('o', 1), ('w', 1), ('r', 1), ('?', 1)]
-    >>> x.pivot()
-    PivotCounter({1: ['?', 'a', 'c', 'e', 'g', 'k', 'o', 'r', 'w'], 2: ['h', 'n', 's', 't', 'y'], 3: ['i'], 4: [' ', '!']})
-    >>> x.cool_pivot() == x.pivot()
-    True
-    >>> x.transpose()
-    ExtremeCounter({1: 9, 2: 5, 3: 1, 4: 2})
     >>> y = ExtremeCounter("yay.")
     >>> y + ExtremeCounter.fromkeys('zab.', 3)
     ExtremeCounter({'.': 4, 'a': 4, 'b': 3, 'y': 2, 'z': 3})
@@ -36,8 +24,13 @@ class ExtremeCounter(Counter):
     ExtremeCounter({'.': 1, 'a': 1, 'b': 0, 'y': 2, 'z': 0})
     >>> y + Counter()
     ExtremeCounter({'.': 1, 'a': 1, 'y': 2})
+    >>> y.pivot()
+    PivotCounter({0: ['b', 'z'], 1: ['.', 'a'], 2: ['y']})
+    >>> y.transpose()
+    ExtremeCounter({0: 2, 1: 2, 2: 1})
 
     """
+    __pivot__ = PivotCounter
 
     def most_common(self, n=None, count_func=None, inverse=False):
         """ List the n most common elements and their counts from the most
@@ -93,13 +86,15 @@ class ExtremeCounter(Counter):
 
         return list(limit_most_common(n))
 
-    def pivot(self):
+    def pivot(self, cls=None):
         """ The pivot table of the Counter.
 
         >>> x = ExtremeCounter("yay? nice!! this thing works!")
         >>> x.update("etsttseststttsetsetse ")
-        >>> x.transpose().pivot()
+        >>> from pivot import PivotCounter
+        >>> x.transpose().pivot(PivotCounter)
         PivotCounter({1: [5, 6, 9, 11], 2: [3], 3: [2], 8: [1]})
+        >>> ExtremeCounter.__pivot__ = PivotCounter
         >>> x.pivot() + x.pivot()
         PivotCounter({10: [' '], 12: ['e'], 18: ['s'], 22: ['t'], 2: ['?', 'a', 'c', 'g', 'k', 'o', 'r', 'w'], 4: ['h', 'n', 'y'], 6: ['!', 'i']})
         >>> ExtremeCounter("lollofant!!").pivot() - ExtremeCounter("trollofant").pivot()
@@ -107,23 +102,9 @@ class ExtremeCounter(Counter):
         >>> ExtremeCounter("lollofant!!").pivot() + ExtremeCounter("trollofant").pivot()
         PivotCounter({1: ['r'], 2: ['!', 'a', 'f', 'n'], 3: ['t'], 4: ['o'], 5: ['l']})
         """
-        return PivotCounter(self)
-
-    def cool_pivot(self):
-        """ Cool pivot table of the Counter.
-
-        >>> x = ExtremeCounter("yay? nice!! this thing works!")
-        >>> x.update("etsttseststttsetsetse ")
-        >>> x.transpose().cool_pivot()
-        CoolPivotCounter({1: [5, 6, 9, 11], 2: [3], 3: [2], 8: [1]})
-        >>> x.cool_pivot() + x.cool_pivot()
-        CoolPivotCounter({10: [' '], 12: ['e'], 18: ['s'], 22: ['t'], 2: ['?', 'a', 'c', 'g', 'k', 'o', 'r', 'w'], 4: ['h', 'n', 'y'], 6: ['!', 'i']})
-        >>> ExtremeCounter("lollofant!!").cool_pivot() - ExtremeCounter("trollofant").cool_pivot()
-        CoolPivotCounter({1: ['l'], 2: ['!']})
-        >>> ExtremeCounter("lollofant!!").cool_pivot() + ExtremeCounter("trollofant").cool_pivot()
-        CoolPivotCounter({1: ['r'], 2: ['!', 'a', 'f', 'n'], 3: ['t'], 4: ['o'], 5: ['l']})
-        """
-        return CoolPivotCounter(self)
+        if cls:
+            return cls(self)
+        return self.__pivot__(self)
 
     def transpose(self):
         """ Use my counts as keys, and as values the list of elements,
