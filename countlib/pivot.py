@@ -211,9 +211,14 @@ class PivotCounter(dict):
         """ Like dict.__delitem__() but does not raise KeyError for missing values.
 
         >>> c = PivotCounter('which')
+        >>> d = PivotCounter(c)
+        >>> c == d
+        True
         >>> del c[2]
         >>> c
         PivotCounter({1: ['c', 'i', 'w']})
+        >>> c == d
+        False
         >>> del c["not there"]
 
         """
