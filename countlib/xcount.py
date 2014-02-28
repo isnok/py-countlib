@@ -110,19 +110,18 @@ class ExtremeCounter(Counter):
         """
         return ExtremeCounter(self.itervalues())
 
-    def pivold(self):
-        """ return the pivot table as a counter  """
-        pivot = ListCounter()
-        for elem, count in self.iteritems():
-            if count in pivot:
-                pivot[count].append(elem)
-            else:
-                pivot[count] = [elem]
-        return pivot
-
     @classmethod
     def fromkeys(cls, iterable, v=0):
-        """ Init a constant Counter. Useful for Counter arithmetic. """
+        """ Init a constant Counter. Useful for Counter arithmetic.
+
+        >>> ExtremeCounter.fromkeys('bumm')
+        ExtremeCounter({'b': 0, 'm': 0, 'u': 0})
+        >>> x = ExtremeCounter.fromkeys('bumm', 50)
+        >>> x
+        ExtremeCounter({'b': 50, 'm': 50, 'u': 50})
+        >>> x + x
+        Counter({'m': 100, 'b': 100, 'u': 100})
+        """
         return cls(dict.fromkeys(iterable, v))
 
     def __repr__(self):
@@ -143,12 +142,6 @@ class ExtremeCounter(Counter):
             return '%s()' % self.__class__.__name__
         items = ', '.join(sorted(stable_output()))
         return '%s({%s})' % (self.__class__.__name__, items)
-
-class ListCounter(Counter):
-    """ A Counter that uses list instead of int objects to count. """
-
-    def __missing__(self, key):
-        return []
 
 
 if __name__ == '__main__':
