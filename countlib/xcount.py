@@ -17,6 +17,20 @@ class ExtremeCounter(Counter):
     [(' ', 4), ('!', 4)]
     >>> x.most_common_counts(1, inverse=True)
     [('a', 1), ('c', 1), ('e', 1), ('g', 1), ('k', 1), ('o', 1), ('w', 1), ('r', 1), ('?', 1)]
+    >>> x.pivot()
+    PivotCounter({1: ['?', 'a', 'c', 'e', 'g', 'k', 'o', 'r', 'w'], 2: ['h', 'n', 's', 't', 'y'], 3: ['i'], 4: [' ', '!']})
+    >>> x.cool_pivot() == x.pivot()
+    True
+    >>> x.transpose()
+    ExtremeCounter({1: 9, 2: 5, 3: 1, 4: 2})
+    >>> y = ExtremeCounter("yay.")
+    >>> y + ExtremeCounter.fromkeys('zab.', 3)
+    ExtremeCounter({'.': 4, 'a': 4, 'b': 3, 'y': 2, 'z': 3})
+    >>> y - ExtremeCounter.fromkeys('zab.', 3)
+    ExtremeCounter({'y': 2})
+    >>> y.subtract(ExtremeCounter.fromkeys('zab.', 3))
+    >>> y
+    ExtremeCounter({'.': -2, 'a': -2, 'b': -3, 'y': 2, 'z': -3})
 
     """
 
@@ -139,6 +153,8 @@ class ExtremeCounter(Counter):
         ExtremeCounter({'b': 50, 'm': 50, 'u': 50})
         >>> x + x
         ExtremeCounter({'b': 100, 'm': 100, 'u': 100})
+        >>> x + x == ExtremeCounter.fromkeys(x, 50+50)
+        True
         """
         return cls(dict.fromkeys(iterable, v))
 
@@ -150,6 +166,12 @@ class ExtremeCounter(Counter):
         ExtremeCounter({'b': 1, 'm': 2, 'u': 1})
         >>> ExtremeCounter({'b': 1, 'm': 2, 'u': 1})
         ExtremeCounter({'b': 1, 'm': 2, 'u': 1})
+        >>> for stuff in ('abc', 'bcccnnno', (12,12,3,4,5,3,3)):
+        ...     x = ExtremeCounter(stuff)
+        ...     print x == eval(repr(x))
+        True
+        True
+        True
 
         """
         def stable_output():
