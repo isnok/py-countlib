@@ -1,6 +1,7 @@
 """ Counters strike! """
 from collections import Counter
 from pivot import PivotCounter
+from coolpivot import CoolPivotCounter
 
 from operator import itemgetter
 from heapq import nlargest, nsmallest
@@ -88,6 +89,22 @@ class ExtremeCounter(Counter):
         PivotCounter({1: ['r'], 2: ['!', 'a', 'f', 'n'], 3: ['t'], 4: ['o'], 5: ['l']})
         """
         return PivotCounter(self)
+
+    def cool_pivot(self):
+        """ Cool pivot table of the Counter.
+
+        >>> x = ExtremeCounter("yay? nice!! this thing works!")
+        >>> x.update("etsttseststttsetsetse ")
+        >>> x.transpose().cool_pivot()
+        CoolPivotCounter({1: [5, 6, 9, 11], 2: [3], 3: [2], 8: [1]})
+        >>> x.cool_pivot() + x.cool_pivot()
+        CoolPivotCounter({10: [' '], 12: ['e'], 18: ['s'], 22: ['t'], 2: ['?', 'a', 'c', 'g', 'k', 'o', 'r', 'w'], 4: ['h', 'n', 'y'], 6: ['!', 'i']})
+        >>> ExtremeCounter("lollofant!!").cool_pivot() - ExtremeCounter("trollofant").cool_pivot()
+        CoolPivotCounter({1: ['l'], 2: ['!']})
+        >>> ExtremeCounter("lollofant!!").cool_pivot() + ExtremeCounter("trollofant").cool_pivot()
+        CoolPivotCounter({1: ['r'], 2: ['!', 'a', 'f', 'n'], 3: ['t'], 4: ['o'], 5: ['l']})
+        """
+        return CoolPivotCounter(self)
 
     def transpose(self):
         """ Use my counts as keys, and as values the list of elements,
