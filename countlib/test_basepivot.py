@@ -1,11 +1,14 @@
 import pytest
+import random
+import string
 
-from countlib import PivotCounter as impl1
-from countlib import CoolPivotCounter as impl2
+from countlib import PivotCounter
+from countlib import CoolPivotCounter
 
+from countlib import ExtremeCounter
 from collections import Counter
 
-base_implementations = (impl1, impl2)
+base_implementations = (PivotCounter, CoolPivotCounter)
 
 def pytest_generate_tests(metafunc):
     if 'TestPivotCounter' in metafunc.fixturenames:
@@ -37,6 +40,29 @@ def test_init_mapping(TestPivotCounter):
 def test_init_kwd(TestPivotCounter):
     assert TestPivotCounter(a=4, b=2) == TestPivotCounter({2: ['b'], 4: ['a']})
 
+def test_fromkeys(TestPivotCounter):
+    assert TestPivotCounter.fromkeys('watch') == TestPivotCounter({'a': [], 'c': [], 'h': [], 't': [], 'w': []})
+    assert TestPivotCounter.fromkeys('watchhhh') == TestPivotCounter({'a': [], 'c': [], 'h': [], 't': [], 'w': []})
+    assert TestPivotCounter.fromkeys('not supplying a v_func means nothing.').unpivot() == Counter()
+    assert TestPivotCounter.fromkeys([1,2,3], lambda n: frozenset(range(n))) == TestPivotCounter({1: [0], 2: [0, 1], 3: [0, 1, 2]})
+
+def test_repr(TestPivotCounter):
+    assert TestPivotCounter('bumm') == TestPivotCounter({1: ['b', 'u'], 2: ['m']})
+    assert eval("TestPivotCounter({1: ['b', 'u'], 2: ['m']})") == TestPivotCounter({1: ['b', 'u'], 2: ['m']})
+    t = TestPivotCounter()
+    for r in range(random.randint(5,25)):
+        cnt = random.randint(-10, 100)
+        rnd = "".join(random.sample(string.letters, random.randint(1,5)))
+        t[cnt] = t[cnt].union(rnd)
+        assert eval(repr(t)) == t
+
+def test_delitem(TestPivotCounter):
+    c = TestPivotCounter('which')
+    del c[2]
+    assert c == TestPivotCounter({1: ['c', 'i', 'w']})
+    del c["not there"]
+
+
 def test_most_common(TestPivotCounter):
     p = TestPivotCounter('abracadabra!')
     assert p.most_common(3) == [(1, frozenset(['!', 'c', 'd'])), (2, frozenset(['r', 'b'])), (5, frozenset(['a']))]
@@ -47,6 +73,17 @@ def test_most_common(TestPivotCounter):
 def test_elements(TestPivotCounter):
     c = TestPivotCounter('ABCABC')
     assert str(sorted(c.elements())) == "['A', 'A', 'B', 'B', 'C', 'C']"
+    d = TestPivotCounter(ExtremeCounter.fromkeys("hejo, test", 0))
+    assert list(d.elements()) == []
+    d = TestPivotCounter(ExtremeCounter.fromkeys("hejo, test", -100))
+    assert not set(d.elements())
+
+def test_iter_dirty(TestPivotCounter):
+    assert [] == list(PivotCounter('ABCABC').iter_dirty())
+    a = PivotCounter('aa')
+    a.update(PivotCounter('a'))
+    assert list(a.iter_dirty()) == [set(['a'])]
+
 
 def test_unpivot(TestPivotCounter):
     assert TestPivotCounter('ABCABC').unpivot() == Counter({'A': 2, 'C': 2, 'B': 2})
@@ -66,22 +103,6 @@ def test_count_sets(TestPivotCounter):
     p = TestPivotCounter('ABCABC')
     assert p.count_sets() == Counter({2: 3})
     assert p.count_sets(count_func=lambda s: 20 - len(s)) == Counter({2: 17})
-
-def test_fromkeys(TestPivotCounter):
-    assert TestPivotCounter.fromkeys('watch') == TestPivotCounter({'a': [], 'c': [], 'h': [], 't': [], 'w': []})
-    assert TestPivotCounter.fromkeys('watchhhh') == TestPivotCounter({'a': [], 'c': [], 'h': [], 't': [], 'w': []})
-    assert TestPivotCounter.fromkeys('not supplying a v_func means nothing.').unpivot() == Counter()
-    assert TestPivotCounter.fromkeys([1,2,3], lambda n: frozenset(range(n))) == TestPivotCounter({1: [0], 2: [0, 1], 3: [0, 1, 2]})
-
-def test_delitem(TestPivotCounter):
-    c = TestPivotCounter('which')
-    del c[2]
-    assert c == TestPivotCounter({1: ['c', 'i', 'w']})
-    del c["not there"]
-
-def test_repr(TestPivotCounter):
-    assert TestPivotCounter('bumm') == TestPivotCounter({1: ['b', 'u'], 2: ['m']})
-    assert eval("TestPivotCounter({1: ['b', 'u'], 2: ['m']})") == TestPivotCounter({1: ['b', 'u'], 2: ['m']})
 
 def test__add_(TestPivotCounter):
     assert TestPivotCounter('abbb') + TestPivotCounter('bcc') == TestPivotCounter({1: ['a'], 2: ['c'], 4: ['b']})

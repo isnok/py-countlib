@@ -27,8 +27,8 @@ class PivotCounterBase(dict):
     def __init__(self, iterable=None, **kwds):
         """ Create a new, empty PivotCounter object. And if given, count elements
             from an input Counter or dict. Or, initialize from another PivotCounter.
-
         """
+
         dict.__init__(self)
         self.update(iterable, **kwds)
 
@@ -39,17 +39,8 @@ class PivotCounterBase(dict):
     def fromkeys(cls, iterable, v_func=None):
         """ Initialize a pivot table from an iterable delivering counts.
             The values can be constructed from the keys via the v_func argument.
-
-        >>> PivotCounter.fromkeys('watch')
-        PivotCounter({'a': [], 'c': [], 'h': [], 't': [], 'w': []})
-        >>> PivotCounter.fromkeys('watchhhh')
-        PivotCounter({'a': [], 'c': [], 'h': [], 't': [], 'w': []})
-        >>> PivotCounter.fromkeys('not supplying a v_func means nothing.').unpivot()
-        Counter()
-        >>> PivotCounter.fromkeys([1,2,3], lambda n: set(range(n)))
-        PivotCounter({1: [0], 2: [0, 1], 3: [0, 1, 2]})
-
         """
+
         new = cls()
         if v_func is None:
             v_func = new.__missing__
@@ -61,13 +52,8 @@ class PivotCounterBase(dict):
         """ Output like defaultdict or other dict variants.
             Thanks to the try-catch behaviour of the update
             method, PivotCounters can be copy-pasted.
-
-        >>> PivotCounter('bumm')
-        PivotCounter({1: ['b', 'u'], 2: ['m']})
-        >>> PivotCounter({1: ['b', 'u'], 2: ['m']})
-        PivotCounter({1: ['b', 'u'], 2: ['m']})
-
         """
+
         def stable_output():
             for count, elem_set in self.iteritems():
                 yield '%r: %r' % (count, sorted(elem_set))
@@ -79,18 +65,6 @@ class PivotCounterBase(dict):
 
     def __delitem__(self, elem):
         """ Like dict.__delitem__() but does not raise KeyError for missing values.
-
-        >>> c = PivotCounter('which')
-        >>> d = PivotCounter(c)
-        >>> c == d
-        True
-        >>> del c[2]
-        >>> c
-        PivotCounter({1: ['c', 'i', 'w']})
-        >>> c == d
-        False
-        >>> del c["not there"]
-
         """
 
         if elem in self:
@@ -101,18 +75,8 @@ class PivotCounterBase(dict):
             to the least. If n is None, then list all bags and counts.
             The sorting can be reversed and customized via the arguments
             reverse and count_func.
-
-        >>> p = PivotCounter('abracadabra!')
-        >>> p.most_common(3)
-        [(1, set(['!', 'c', 'd'])), (2, set(['r', 'b'])), (5, set(['a']))]
-        >>> p.most_common(2, reverse=True)
-        [(5, set(['a'])), (2, set(['r', 'b']))]
-        >>> p.most_common(2, count_func=lambda i: -len(i[1]))
-        [(5, set(['a'])), (2, set(['r', 'b']))]
-        >>> p.most_common(2, count_func=lambda i: -len(i[1]), reverse=True)
-        [(1, set(['!', 'c', 'd'])), (2, set(['r', 'b']))]
-
         """
+
         if count_func is None:
             def count_func(item):
                 return len(item[1])
@@ -126,15 +90,10 @@ class PivotCounterBase(dict):
     def elements(self):
         """ Iterator over elements repeating each as many times as its count.
             This relies on values to be iterable and keys to be integers.
-
-        >>> c = PivotCounter('ABCABC')
-        >>> sorted(c.elements())
-        ['A', 'A', 'B', 'B', 'C', 'C']
-
-        If an element's count has been set to zero or is a negative number,
-        elements() will ignore it.
-
+            If an element's count has been set to zero or is a negative number,
+            elements() will ignore it.
         """
+
         for count, elem_set in self.iteritems():
             for elem in elem_set:
                 for _ in repeat(None, count):
