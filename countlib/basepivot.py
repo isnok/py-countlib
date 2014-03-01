@@ -17,7 +17,9 @@ class PivotCounterBase(dict):
         All other means of manipulating values (including init)
         are channelled through the update() method.
 
-        The dict interface is extended by 
+        The dict interface is extended by some operations
+        resembling Counter behaviour which means that negative
+        and zero counts are stripped.
 
     >>> PivotCounter()
     PivotCounter()
