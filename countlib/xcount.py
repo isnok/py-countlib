@@ -94,7 +94,7 @@ class ExtremeCounter(Counter):
         >>> from pivot import PivotCounter
         >>> x.transpose().pivot(PivotCounter)
         PivotCounter({1: [5, 6, 9, 11], 2: [3], 3: [2], 8: [1]})
-        >>> ExtremeCounter.__pivot__ = PivotCounter
+        >>> x.__pivot__ = PivotCounter
         >>> x.pivot() + x.pivot()
         PivotCounter({10: [' '], 12: ['e'], 18: ['s'], 22: ['t'], 2: ['?', 'a', 'c', 'g', 'k', 'o', 'r', 'w'], 4: ['h', 'n', 'y'], 6: ['!', 'i']})
         >>> ExtremeCounter("lollofant!!").pivot() - ExtremeCounter("trollofant").pivot()
