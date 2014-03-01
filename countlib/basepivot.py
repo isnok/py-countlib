@@ -20,39 +20,13 @@ class PivotCounterBase(dict):
         The dict interface is extended by some operations
         resembling Counter behaviour which means that negative
         and zero counts are stripped.
-
-    >>> PivotCounter()
-    PivotCounter()
-    >>> PivotCounter('zyzygy')
-    PivotCounter({1: ['g'], 2: ['z'], 3: ['y']})
-    >>> PivotCounter(Counter('zyzygy'))
-    PivotCounter({1: ['g'], 2: ['z'], 3: ['y']})
-    >>> PivotCounter('lalalohoe') == PivotCounter(Counter('lalalohoe'))
-    True
-    >>> PivotCounter('lllaaoohe') == PivotCounter('lalalohoe')
-    True
-    >>> PivotCounter('lllaaoohe') == PivotCounter(set('lalalohoe'))
-    False
-    >>> PivotCounter('test').subtract(Counter('tst'))
-    NotImplemented
-    >>> PivotCounter('test').subtract(PivotCounter('tst'))
-    PivotCounter({0: ['s', 't'], 1: ['e']})
-
     """
+
     __unpivot__ = Counter
 
     def __init__(self, iterable=None, **kwds):
         """ Create a new, empty PivotCounter object. And if given, count elements
             from an input Counter or dict. Or, initialize from another PivotCounter.
-
-        >>> PivotCounter() == {}             # a new, empty counter
-        True
-        >>> PivotCounter('gallahad')         # a new counter from an iterable
-        PivotCounter({1: ['d', 'g', 'h'], 2: ['l'], 3: ['a']})
-        >>> PivotCounter({'a': 4, 'b': 2})   # a new counter from a mapping
-        PivotCounter({2: ['b'], 4: ['a']})
-        >>> PivotCounter(a=4, b=2)           # a new counter from keyword args
-        PivotCounter({2: ['b'], 4: ['a']})
 
         """
         dict.__init__(self)
