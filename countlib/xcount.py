@@ -8,27 +8,6 @@ from itertools import ifilter
 
 class ExtremeCounter(Counter):
     """ Buffed Counter class. Extreme usefulness to be expected.
-
-    >>> ExtremeCounter('zyzygy')
-    ExtremeCounter({'g': 1, 'y': 3, 'z': 2})
-    >>> y = ExtremeCounter("yay.")
-    >>> y + ExtremeCounter.fromkeys('zab.', 3)
-    ExtremeCounter({'.': 4, 'a': 4, 'b': 3, 'y': 2, 'z': 3})
-    >>> y - ExtremeCounter.fromkeys('zab.', 3)
-    ExtremeCounter({'y': 2})
-    >>> y.subtract(ExtremeCounter.fromkeys('zab.', 3))
-    >>> y
-    ExtremeCounter({'.': -2, 'a': -2, 'b': -3, 'y': 2, 'z': -3})
-    >>> y.add(ExtremeCounter.fromkeys('zab.', 3))
-    >>> y
-    ExtremeCounter({'.': 1, 'a': 1, 'b': 0, 'y': 2, 'z': 0})
-    >>> y + Counter()
-    ExtremeCounter({'.': 1, 'a': 1, 'y': 2})
-    >>> y.pivot()
-    PivotCounter({0: ['b', 'z'], 1: ['.', 'a'], 2: ['y']})
-    >>> y.transpose()
-    ExtremeCounter({0: 2, 1: 2, 2: 1})
-
     """
     __pivot__ = PivotCounter
 
@@ -37,19 +16,8 @@ class ExtremeCounter(Counter):
             common to the least.  If n is None, then list all element counts.
             The way counting is done can be customized via the count_func
             argument, that is passed to the sorting as the key function.
-
-
-        >>> p = ExtremeCounter('abracadabra!')
-        >>> p.most_common(3)
-        [('a', 5), ('b', 2), ('r', 2)]
-        >>> p.most_common(2, inverse=True)
-        [('!', 1), ('c', 1)]
-        >>> p.most_common(2, count_func=lambda i: -i[1])
-        [('!', 1), ('c', 1)]
-        >>> p.most_common(2, count_func=lambda i: -i[1], inverse=True)
-        [('a', 5), ('b', 2)]
-
         """
+
         if count_func is None:
             count_func = itemgetter(1)
         if n is None:
@@ -63,14 +31,6 @@ class ExtremeCounter(Counter):
     def most_common_counts(self, n, *args, **kw):
         """ Get all items with the n highest counts.
             Much like most_common but limit is applied to values (counts).
-
-        >>> x = ExtremeCounter("yay? nice!! this thing works!")
-        >>> x.update("etsttseststttsetsetse ")
-        >>> x.most_common_counts(1)
-        [('t', 11)]
-        >>> x.most_common_counts(5)
-        [('t', 11), ('s', 9), ('e', 6), (' ', 5), ('i', 3), ('!', 3)]
-
         """
         def limit_most_common(limit):
             for elem, count in self.most_common(*args, **kw):
@@ -88,19 +48,6 @@ class ExtremeCounter(Counter):
 
     def pivot(self, cls=None):
         """ The pivot table of the Counter.
-
-        >>> x = ExtremeCounter("yay? nice!! this thing works!")
-        >>> x.update("etsttseststttsetsetse ")
-        >>> from pivot import PivotCounter
-        >>> x.transpose().pivot(PivotCounter)
-        PivotCounter({1: [5, 6, 9, 11], 2: [3], 3: [2], 8: [1]})
-        >>> x.__pivot__ = PivotCounter
-        >>> x.pivot() + x.pivot()
-        PivotCounter({10: [' '], 12: ['e'], 18: ['s'], 22: ['t'], 2: ['?', 'a', 'c', 'g', 'k', 'o', 'r', 'w'], 4: ['h', 'n', 'y'], 6: ['!', 'i']})
-        >>> ExtremeCounter("lollofant!!").pivot() - ExtremeCounter("trollofant").pivot()
-        PivotCounter({1: ['l'], 2: ['!']})
-        >>> ExtremeCounter("lollofant!!").pivot() + ExtremeCounter("trollofant").pivot()
-        PivotCounter({1: ['r'], 2: ['!', 'a', 'f', 'n'], 3: ['t'], 4: ['o'], 5: ['l']})
         """
         if cls:
             return cls(self)
@@ -109,56 +56,18 @@ class ExtremeCounter(Counter):
     def transpose(self):
         """ Use my counts as keys, and as values the list of elements,
             that have that count.
-
-        >>> x = ExtremeCounter("yay? nice!! this thing works!")
-        >>> x.update("etsttseststttsetsetse ")
-        >>> old_x = None
-        >>> while old_x != x:
-        ...     old_x = x
-        ...     x = x.transpose()
-        ...     print old_x
-        ExtremeCounter({' ': 5, '!': 3, '?': 1, 'a': 1, 'c': 1, 'e': 6, 'g': 1, 'h': 2, 'i': 3, 'k': 1, 'n': 2, 'o': 1, 'r': 1, 's': 9, 't': 11, 'w': 1, 'y': 2})
-        ExtremeCounter({11: 1, 1: 8, 2: 3, 3: 2, 5: 1, 6: 1, 9: 1})
-        ExtremeCounter({1: 4, 2: 1, 3: 1, 8: 1})
-        ExtremeCounter({1: 3, 4: 1})
-        ExtremeCounter({1: 1, 3: 1})
-        ExtremeCounter({1: 2})
-        ExtremeCounter({2: 1})
-        ExtremeCounter({1: 1})
         """
         return ExtremeCounter(self.itervalues())
 
     @classmethod
     def fromkeys(cls, iterable, v=0):
         """ Init a constant Counter. Useful for Counter arithmetic.
-
-        >>> ExtremeCounter.fromkeys('bumm')
-        ExtremeCounter({'b': 0, 'm': 0, 'u': 0})
-        >>> x = ExtremeCounter.fromkeys('bumm', 50)
-        >>> x
-        ExtremeCounter({'b': 50, 'm': 50, 'u': 50})
-        >>> x + x
-        ExtremeCounter({'b': 100, 'm': 100, 'u': 100})
-        >>> x + x == ExtremeCounter.fromkeys(x, 50+50)
-        True
         """
         return cls(dict.fromkeys(iterable, v))
 
     def __repr__(self):
         """ Output like defaultdict or other dict variants.
             Of course ExtremeCounters can be copy-pasted.
-
-        >>> ExtremeCounter('bumm')
-        ExtremeCounter({'b': 1, 'm': 2, 'u': 1})
-        >>> ExtremeCounter({'b': 1, 'm': 2, 'u': 1})
-        ExtremeCounter({'b': 1, 'm': 2, 'u': 1})
-        >>> for stuff in ('abc', 'bcccnnno', (12,12,3,4,5,3,3)):
-        ...     x = ExtremeCounter(stuff)
-        ...     print x == eval(repr(x))
-        True
-        True
-        True
-
         """
         def stable_output():
             for elem, count in self.iteritems():
@@ -181,16 +90,6 @@ class ExtremeCounter(Counter):
 
     def __add__(self, other):
         """ Union the keys, add the counts.
-
-        >>> ExtremeCounter('abbb') + ExtremeCounter('bcc')
-        ExtremeCounter({'a': 1, 'b': 4, 'c': 2})
-        >>> ExtremeCounter('abbb') + Counter('bcc')
-        ExtremeCounter({'a': 1, 'b': 4, 'c': 2})
-        >>> ExtremeCounter('aaa') + ExtremeCounter.fromkeys('a', -1)
-        ExtremeCounter({'a': 2})
-        >>> ExtremeCounter('aaa') + ExtremeCounter.fromkeys('a', -3)
-        ExtremeCounter()
-
         """
         if not isinstance(other, Counter):
             return NotImplemented
@@ -203,12 +102,6 @@ class ExtremeCounter(Counter):
 
     def __sub__(self, other):
         """ Subtract count, but keep only results with positive counts.
-
-        >>> ExtremeCounter('abbbc') - ExtremeCounter('bccd')
-        ExtremeCounter({'a': 1, 'b': 2})
-        >>> ExtremeCounter('abbbc') - Counter('bccd')
-        ExtremeCounter({'a': 1, 'b': 2})
-
         """
         if not isinstance(other, Counter):
             return NotImplemented
@@ -224,23 +117,6 @@ class ExtremeCounter(Counter):
             The (strangely missing) eqivalent of Counter.subtract.
             Iteration is limited to the key set of other, so default
             values that are not iterated over will be skipped.
-
-        >>> a = ExtremeCounter('abbb')
-        >>> a
-        ExtremeCounter({'a': 1, 'b': 3})
-        >>> a.add(ExtremeCounter('bcc'))
-        >>> a
-        ExtremeCounter({'a': 1, 'b': 4, 'c': 2})
-        >>> a + ExtremeCounter.fromkeys('ab', -12)
-        ExtremeCounter({'c': 2})
-        >>> a.add(ExtremeCounter.fromkeys('ab', -12))
-        >>> a
-        ExtremeCounter({'a': -11, 'b': -8, 'c': 2})
-        >>> a.add(a)
-        >>> a.subtract(a)
-        >>> a
-        ExtremeCounter({'a': 0, 'b': 0, 'c': 0})
-
         """
         if not isinstance(other, Counter):
             return NotImplemented
@@ -249,12 +125,6 @@ class ExtremeCounter(Counter):
 
     def __or__(self, other):
         """ Union is the maximum of value in either of the input counters.
-
-        >>> ExtremeCounter('abbb') | ExtremeCounter('bcc')
-        ExtremeCounter({'a': 1, 'b': 3, 'c': 2})
-        >>> ExtremeCounter('abbb') | Counter('bcc')
-        ExtremeCounter({'a': 1, 'b': 3, 'c': 2})
-
         """
         if not isinstance(other, Counter):
             return NotImplemented
@@ -268,14 +138,6 @@ class ExtremeCounter(Counter):
 
     def __and__(self, other):
         """ Intersection is the minimum of corresponding counts.
-
-        >>> ExtremeCounter('abbb') & ExtremeCounter('bcc')
-        ExtremeCounter({'b': 1})
-        >>> ExtremeCounter('abbb') & Counter('bcc')
-        ExtremeCounter({'b': 1})
-        >>> Counter('abbb') & ExtremeCounter('bcc')
-        Counter({'b': 1})
-
         """
         if not isinstance(other, Counter):
             return NotImplemented
@@ -288,7 +150,3 @@ class ExtremeCounter(Counter):
             if newcount > 0:
                 result[elem] = newcount
         return result
-
-if __name__ == '__main__':
-    import doctest
-    print doctest.testmod()

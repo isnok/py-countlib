@@ -82,8 +82,3 @@ class CoolPivotCounter(PivotCounterBase):
             The sets acting as values are copied as well.
         """
         return dict.copy(self)
-
-
-if __name__ == '__main__':
-    import doctest
-    print doctest.testmod()

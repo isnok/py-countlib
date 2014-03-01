@@ -139,3 +139,7 @@ def test__or_(TestPivotCounter):
 def test__and_(TestPivotCounter):
     assert TestPivotCounter('hello') & TestPivotCounter('hallo') == TestPivotCounter({1: ['h', 'o'], 2: ['l']})
     assert TestPivotCounter('abbb') & TestPivotCounter('bcc') == TestPivotCounter()
+
+if __name__ == '__main__':
+    import pytest
+    pytest.main()

@@ -238,4 +238,3 @@ class PivotCounterBase(dict):
                 result[elem] = newcount
         return result
 
-

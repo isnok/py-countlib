@@ -89,5 +89,5 @@ def test_frozen_copy():
     )
 
 if __name__ == '__main__':
-    import doctest
-    print doctest.testmod()
+    import pytest
+    pytest.main()
