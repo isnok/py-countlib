@@ -11,7 +11,6 @@ def test_mutable_class():
     assert not isinstance(PivotCounter('abbb')[10], frozenset)
 
 def test_mutable_update():
-
     d = PivotCounter('watch')
     d.update('boofittii')                 # add in elements via another counter-like
     assert d                              #                 v------- o_O -------v
@@ -32,19 +31,33 @@ def test_mutable_missing():
 def test_mutable_copy():
     c = PivotCounter('which')
     d = c.copy()
-    del c[2]
+    assert d == c
+    assert not c is d
+    d[2].discard('h')
     assert not c == d
-    assert (c, d) == (PivotCounter({1: ['c', 'i', 'w']}), PivotCounter({1: ['c', 'i', 'w'], 2: ['h']}))
-    d[1].discard('c')
-    assert not c == d
-    assert (c, d) == (PivotCounter({1: ['c', 'i', 'w']}), PivotCounter({1: ['i', 'w'], 2: ['h']}))
+    e = c.copy()
+    assert e == c
+    assert not e is c and not e is d
+    del e[2]
+    assert not e == c
+    assert not e == d
+    assert e == d + PivotCounter()
 
+###### CoolPivot tests ######
 
 def test_frozen_class():
     assert not isinstance(CoolPivotCounter('abbb')[1], set)
     assert isinstance(CoolPivotCounter('abbb')[1], frozenset)
     assert not isinstance(CoolPivotCounter('abbb')[10], set)
     assert isinstance(CoolPivotCounter('abbb')[10], frozenset)
+
+def test_frozen_values():
+    d = CoolPivotCounter("bamm")
+    try:
+        d[1].discard('c')
+        assert False
+    except AttributeError:
+        assert True
 
 def test_frozen_update():
     d = CoolPivotCounter('watch')
@@ -66,17 +79,14 @@ def test_frozen_missing():
 def test_frozen_copy():
     c = CoolPivotCounter('which')
     d = c.copy()
+    assert c == d
+    assert not c is d
     del c[2]
-    assert c, d == (CoolPivotCounter({1: ['c', 'i', 'w']}), CoolPivotCounter({1: ['c', 'i', 'w'], 2: ['h']}))
-
-    try:
-        d[1].discard('c')
-        assert False
-    except AttributeError:
-        assert True
-
-    assert c, d == (CoolPivotCounter({1: ['c', 'i', 'w']}), CoolPivotCounter({1: ['c', 'i', 'w'], 2: ['h']}))
-    assert not c == d
+    assert c != d
+    assert c, d == (
+        CoolPivotCounter({1: ['c', 'i', 'w']}),
+        CoolPivotCounter({1: ['c', 'i', 'w'], 2: ['h']})
+    )
 
 if __name__ == '__main__':
     import doctest

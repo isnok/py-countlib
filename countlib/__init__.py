@@ -34,5 +34,5 @@ from pivot import CoolPivotCounter
 if __name__ == '__main__':
     import doctest
     doctest.testmod()
-    for module in ('xcount', 'pivot',): # 'basepivot'):
+    for module in ('xcount',):# 'pivot', 'basepivot'):
         print "%s: %s" % (module, doctest.testmod(__import__(module)))
