@@ -1,5 +1,6 @@
 """ Counters strike! """
 from collections import Counter
+from collections import Mapping
 from pivot import PivotCounter
 
 from operator import itemgetter
@@ -112,16 +113,40 @@ class ExtremeCounter(Counter):
                 result[elem] = newcount
         return result
 
-    def add(self, other):
+    def add(self, iterable=None, **kwds):
         """ Add in Counts without discarding non-positive.
             The (strangely missing) eqivalent of Counter.subtract.
             Iteration is limited to the key set of other, so default
             values that are not iterated over will be skipped.
         """
-        if not isinstance(other, Counter):
-            return NotImplemented
-        for elem in set(other):
-            self[elem] += other[elem]
+        if iterable is not None:
+            self_get = self.get
+            if isinstance(iterable, Mapping):
+                for elem, count in iterable.items():
+                    self[elem] = self_get(elem, 0) + count
+            else:
+                for elem in iterable:
+                    self[elem] = self_get(elem, 0) + 1
+        if kwds:
+            self.add(kwds)
+
+    def subtract(self, iterable=None, **kwds):
+        """ Like dict.update() but subtracts counts instead of replacing them.
+            Counts can be reduced below zero.  Both the inputs and outputs are
+            allowed to contain zero and negative counts.
+
+            Source can be an iterable, a dictionary, or another Counter instance.
+        """
+        if iterable is not None:
+            self_get = self.get
+            if isinstance(iterable, Mapping):
+                for elem, count in iterable.items():
+                    self[elem] = self_get(elem, 0) - count
+            else:
+                for elem in iterable:
+                    self[elem] = self_get(elem, 0) - 1
+        if kwds:
+            self.subtract(kwds)
 
     def __or__(self, other):
         """ Union is the maximum of value in either of the input counters.

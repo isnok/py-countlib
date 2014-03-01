@@ -98,6 +98,17 @@ def test_add():
     a.add(a)
     a.subtract(a)
     assert a == ExtremeCounter({'a': 0, 'b': 0, 'c': 0})
+    a.add(a=-10)
+    assert a["a"] == -10
+
+def test_subtract():
+    c = Counter('which')
+    c.subtract('witch')             # subtract elements from another iterable
+    c.subtract(Counter('watch'))    # subtract elements from another counter
+    assert c['h'] == 0              # 2 in which, minus 1 in witch, minus 1 in watch
+    assert c['w'] == -1             # 1 in which, minus 1 in witch, minus 1 in watch
+    c.subtract(w=-6)
+    assert c['w'] == 5
 
 def test___or__():
     assert ExtremeCounter('abbb') | ExtremeCounter('bcc') == ExtremeCounter({'a': 1, 'b': 3, 'c': 2})
