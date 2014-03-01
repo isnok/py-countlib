@@ -154,17 +154,13 @@ class PivotCounterBase(dict):
 
         return Counter(iter_counts())
 
-
-    # Multiset-style mathematical operations discussed in:
-    #       Knuth TAOCP Volume II section 4.6.3 exercise 19
-    #       and at http://en.wikipedia.org/wiki/Multiset
-    #
-    # Canonical extension to pivot tables by Konstantin Martini.
-    #
-    # Outputs guaranteed to only include non-empty counts.
-    #
-    # To strip empty sets, add-in an empty pivot counter:
-    #       c += PivotCounter()
+    def __neg__(self):
+        """ Invert all counts (here, these are keys).
+        """
+        result = self.__class__()
+        for count, elem_set in self.iteritems():
+            result[-count] = elem_set.copy()
+        return result
 
     def __add__(self, other):
         """ Add two pivots by adding the underlying Counters.

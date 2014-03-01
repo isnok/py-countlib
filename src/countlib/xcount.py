@@ -29,12 +29,12 @@ class ExtremeCounter(Counter):
             return nlargest(n, self.iteritems(), key=count_func)
 
 
-    def most_common_counts(self, n, *args, **kw):
+    def most_common_counts(self, n, *args, **kwd):
         """ Get all items with the n highest counts.
             Much like most_common but limit is applied to values (counts).
         """
         def limit_most_common(limit):
-            for elem, count in self.most_common(*args, **kw):
+            for elem, count in self.most_common(*args, **kwd):
                 if not "last_count" in locals():
                     last_count = count
                 else:
@@ -79,15 +79,12 @@ class ExtremeCounter(Counter):
         items = ', '.join(sorted(stable_output()))
         return '%s({%s})' % (self.__class__.__name__, items)
 
-
-    # Multiset-style mathematical operations discussed in:
-    #       Knuth TAOCP Volume II section 4.6.3 exercise 19
-    #       and at http://en.wikipedia.org/wiki/Multiset
-    #
-    # Outputs guaranteed to only include positive counts.
-    # To strip negative and zero counts, add-in an empty counter:
-    #
-    #       c += ExtremeCounter()
+    def __neg__(self):
+        """ Negate all counts. """
+        result = ExtremeCounter()
+        for key, value in self.iteritems():
+            result[key] = -value
+        return result
 
     def __add__(self, other):
         """ Union the keys, add the counts.

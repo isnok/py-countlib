@@ -11,12 +11,40 @@ from collections import Counter
 base_implementations = set([PivotCounter, CoolPivotCounter])
 
 @pytest.fixture
+def TestSet(TestPivotCounter):
+    if TestPivotCounter == PivotCounter:
+        return set
+    elif TestPivotCounter == CoolPivotCounter:
+        return frozenset
+
+@pytest.fixture
 def other_implementations(TestPivotCounter):
     return base_implementations.difference([TestPivotCounter])
 
 def pytest_generate_tests(metafunc):
     if 'TestPivotCounter' in metafunc.fixturenames:
         metafunc.parametrize('TestPivotCounter', base_implementations)
+
+def test_mutation(TestPivotCounter, other_implementations):
+    t = TestPivotCounter("floosh!!!")
+    for cls in other_implementations:
+        x = cls(t)
+        assert x == t
+        assert x + t
+        assert not x - t
+        assert x.add(t)
+        assert x.subtract(t)
+        assert x | t
+        assert x & t
+
+        assert x.pop(1)
+        assert x + t
+        assert not x - t
+        assert t - x
+        assert x.add(t)
+        assert x.subtract(t)
+        assert x | t
+        assert x & t
 
 def test_bool(TestPivotCounter):
     assert TestPivotCounter
@@ -113,11 +141,19 @@ def test_count_sets(TestPivotCounter):
     assert p.count_sets() == Counter({2: 3})
     assert p.count_sets(count_func=lambda s: 20 - len(s)) == Counter({2: 17})
 
-def test__add_(TestPivotCounter):
+def test___neg__(TestPivotCounter, TestSet):
+    neg = -TestPivotCounter.fromkeys([-1,0,1,2], lambda c: TestSet([c]))
+    assert neg[2] == TestSet()
+    assert neg[1] == TestSet([-1])
+    assert neg[0] == TestSet([0])
+    assert neg[-1] == TestSet([1])
+    assert neg[-2] == TestSet([2])
+
+def test___add__(TestPivotCounter):
     assert TestPivotCounter('abbb') + TestPivotCounter('bcc') == TestPivotCounter({1: ['a'], 2: ['c'], 4: ['b']})
     assert TestPivotCounter(Counter('abbb') + Counter('bcc')) == TestPivotCounter({1: ['a'], 2: ['c'], 4: ['b']})
 
-def test__sub_(TestPivotCounter):
+def test___sub__(TestPivotCounter):
     assert TestPivotCounter('abbbc') - TestPivotCounter('bccd') == TestPivotCounter({1: ['a'], 2: ['b']})
     assert TestPivotCounter(Counter('abbbc') - Counter('bccd')) == TestPivotCounter({1: ['a'], 2: ['b']})
 
@@ -133,10 +169,10 @@ def test_subtract(TestPivotCounter):
 
     assert PivotCounter('abbbc').subtract(PivotCounter('bccd')) == PivotCounter({-1: ['c', 'd'], 1: ['a'], 2: ['b']})
 
-def test__or_(TestPivotCounter):
+def test___or__(TestPivotCounter):
     assert TestPivotCounter('abbb') | TestPivotCounter('bcc') == TestPivotCounter({1: ['a', 'b'], 2: ['c'], 3: ['b']})
 
-def test__and_(TestPivotCounter):
+def test___and__(TestPivotCounter):
     assert TestPivotCounter('hello') & TestPivotCounter('hallo') == TestPivotCounter({1: ['h', 'o'], 2: ['l']})
     assert TestPivotCounter('abbb') & TestPivotCounter('bcc') == TestPivotCounter()
 

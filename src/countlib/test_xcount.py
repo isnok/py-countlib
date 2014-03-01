@@ -4,6 +4,14 @@ from countlib import ExtremeCounter
 from collections import Counter
 from pivot import PivotCounter
 
+@pytest.fixture
+def abc():
+    return ExtremeCounter("abc")
+
+@pytest.fixture
+def abc2():
+    return ExtremeCounter("abcabbcccddeefgggggghiii")
+
 def test_class():
     assert ExtremeCounter('zyzygy') == ExtremeCounter({'g': 1, 'y': 3, 'z': 2})
     y = ExtremeCounter("yay.")
@@ -76,6 +84,11 @@ def test___repr__():
     for stuff in ('abc', 'bcccnnno', (12,12,3,4,5,3,3)):
         x = ExtremeCounter(stuff)
         assert x == eval(repr(x))
+
+def test___neg__(abc, abc2):
+    neg = -abc
+    assert neg == ExtremeCounter({'a': -1, 'b': -1, 'c': -1})
+
 
 def test___add__():
     assert ExtremeCounter('abbb') + ExtremeCounter('bcc') == ExtremeCounter({'a': 1, 'b': 4, 'c': 2})
