@@ -51,13 +51,11 @@ class PivotCounter(PivotCounterBase):
             self.update(kwds)
 
     def __missing__(self, key):
-        """ Create a new, empty PivotCounter object. And if given, count elements
-            from an input Counter or dict. Or, initialize from another PivotCounter.
-
-        >>> PivotCounter()["x"]
-        set([])
+        """ Create a new key if it is requested. Since keys are mutable the value
+            needs to be stored in case it is modified somewhere outside.
+            This differs from the behaviour of the frozen variant.
         """
-        return set()
+        return self.setdefault(key, set())
 
     def copy(self):
         """ Like dict.copy() but returns a PivotCounter instance instead of a dict.

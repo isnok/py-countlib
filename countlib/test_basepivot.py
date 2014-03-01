@@ -8,7 +8,11 @@ from countlib import CoolPivotCounter
 from countlib import ExtremeCounter
 from collections import Counter
 
-base_implementations = (PivotCounter, CoolPivotCounter)
+base_implementations = set([PivotCounter, CoolPivotCounter])
+
+@pytest.fixture
+def other_implementations(TestPivotCounter):
+    return base_implementations.difference([TestPivotCounter])
 
 def pytest_generate_tests(metafunc):
     if 'TestPivotCounter' in metafunc.fixturenames:
@@ -79,11 +83,16 @@ def test_elements(TestPivotCounter):
     assert not set(d.elements())
 
 def test_iter_dirty(TestPivotCounter):
-    assert [] == list(PivotCounter('ABCABC').iter_dirty())
-    a = PivotCounter('aa')
-    a.update(PivotCounter('a'))
+    assert [] == list(TestPivotCounter('ABCABC').iter_dirty())
+    a = TestPivotCounter('aa')
+    a.update(TestPivotCounter('a'))
     assert list(a.iter_dirty()) == [set(['a'])]
 
+def test_is_clean(TestPivotCounter):
+    assert TestPivotCounter(range(3)).is_clean()
+    a = TestPivotCounter('aa')
+    a.update(TestPivotCounter('a'))
+    assert not a.is_clean()
 
 def test_unpivot(TestPivotCounter):
     assert TestPivotCounter('ABCABC').unpivot() == Counter({'A': 2, 'C': 2, 'B': 2})
@@ -113,11 +122,16 @@ def test__sub_(TestPivotCounter):
     assert TestPivotCounter(Counter('abbbc') - Counter('bccd')) == TestPivotCounter({1: ['a'], 2: ['b']})
 
 def test_add(TestPivotCounter):
-    pass
+    a, b = TestPivotCounter('abbbc'), TestPivotCounter('bccd')
+    assert a.subtract(b) == TestPivotCounter({-1: ['c', 'd'], 1: ['a'], 2: ['b']})
+    assert a.subtract(b).add("xxx") == NotImplemented
+    assert a.subtract(b).add(TestPivotCounter("xxx")) == TestPivotCounter({1: ['a'], 2: ['b'], 3: ['x']})
 
 def test_subtract(TestPivotCounter):
     assert TestPivotCounter('test').subtract(Counter('tst')) == NotImplemented
     assert TestPivotCounter('test').subtract(TestPivotCounter('tst')) == TestPivotCounter({0: ['s', 't'], 1: ['e']})
+
+    assert PivotCounter('abbbc').subtract(PivotCounter('bccd')) == PivotCounter({-1: ['c', 'd'], 1: ['a'], 2: ['b']})
 
 def test__or_(TestPivotCounter):
     assert TestPivotCounter('abbb') | TestPivotCounter('bcc') == TestPivotCounter({1: ['a', 'b'], 2: ['c'], 3: ['b']})

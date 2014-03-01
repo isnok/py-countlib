@@ -13,17 +13,21 @@ def test_mutable_class():
 def test_mutable_update():
 
     d = PivotCounter('watch')
-    d.update('boofittii')          # add in elements via another counter-like
-    assert d                              #     v------- o_O -------v
+    d.update('boofittii')                 # add in elements via another counter-like
+    assert d                              #                 v------- o_O -------v
     assert d == PivotCounter({1: ['a', 'b', 'c', 'f', 'h', 't', 'w'], 2: ['o', 't'], 3: ['i']})
     assert PivotCounter(d.unpivot())      # to fix it regenerate the PivotCounter ==
     assert PivotCounter(d.unpivot()) == PivotCounter({1: ['a', 'b', 'c', 'f', 'h', 'w'], 2: ['o'], 3: ['i', 't']})
     c = PivotCounter('which')
-    c.update(PivotCounter('boof')) # update the dict way
+    c.update(PivotCounter('boof'))        # update the dict way
     assert c == PivotCounter({1: ['b', 'f'], 2: ['o']})
 
 def test_mutable_missing():
-        assert PivotCounter()["x"] == set()
+    c = PivotCounter()
+    assert not "x" in c
+    assert not len(c["x"])
+    assert "x" in c
+    assert isinstance(c["x"], set)
 
 def test_mutable_copy():
     c = PivotCounter('which')
@@ -53,7 +57,11 @@ def test_frozen_update():
     assert c == CoolPivotCounter({1: ['b', 'f'], 2: ['o']})
 
 def test_frozen_missing():
-    assert CoolPivotCounter()["x"] == frozenset()
+    c = CoolPivotCounter()
+    assert not "x" in c
+    assert not len(c["x"])
+    assert not "x" in c
+    assert isinstance(c["x"], frozenset)
 
 def test_frozen_copy():
     c = CoolPivotCounter('which')

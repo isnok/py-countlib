@@ -101,14 +101,8 @@ class PivotCounterBase(dict):
 
     def iter_dirty(self):
         """ Iterator over the overlapping value pairs, if any.
-
-        >>> list(PivotCounter('ABCABC').iter_dirty())
-        []
-        >>> a = PivotCounter('aa')
-        >>> a.update(PivotCounter('a'))
-        >>> list(a.iter_dirty())
-        [set(['a'])]
         """
+
         acc = set()
         sec = acc.intersection
         add = acc.update
@@ -120,14 +114,8 @@ class PivotCounterBase(dict):
 
     def is_clean(self):
         """ True if no values overlap. Reliably returns a boolean.
-
-        >>> PivotCounter(range(3)).is_clean()
-        True
-        >>> a = PivotCounter('aa')
-        >>> a.update(PivotCounter('a'))
-        >>> a.is_clean()
-        False
         """
+
         try:
             next(self.iter_dirty())
             return False
@@ -136,20 +124,6 @@ class PivotCounterBase(dict):
 
     def unpivot(self, check=None, clean=None):
         """ Turn the PivotCounter back into a Counter.
-        >>> PivotCounter().unpivot()
-        Counter()
-        >>> PivotCounter('ABCABC').unpivot()
-        Counter({'A': 2, 'C': 2, 'B': 2})
-        >>> Counter("lollofant") == PivotCounter("lollofant").unpivot()
-        True
-        >>> fant = PivotCounter("lollofant")
-        >>> fant.unpivot(clean=True) == fant.unpivot(check=True)
-        True
-        >>> for x in xrange(5, 99):
-        ...     fant[x] = set(['B'])
-        >>> fant.unpivot(clean=True) == fant.unpivot(check=True)
-        False
-
         """
         if clean or (check and self.is_clean()):
             counter = self.__unpivot__()
@@ -161,14 +135,8 @@ class PivotCounterBase(dict):
     def unpivot_items(self):
         """ Iterator over (element, count) tuples of underlying Counter.
             This only relies on values to be iterable.
-
-        >>> c = PivotCounter('ABCABC')
-        >>> sorted(c.unpivot_items())
-        [('A', 2), ('B', 2), ('C', 2)]
-        >>> sorted(c.unpivot_items()) == sorted(Counter('ABCABC').items())
-        True
-
         """
+
         for count, elem_set in self.iteritems():
             for elem in elem_set:
                 yield (elem, count)
@@ -177,14 +145,8 @@ class PivotCounterBase(dict):
         """ By default, a Counter whose counts are the lengths of this
             PivotCounters sets. count_func is called once for every value
             and is required to return an integer.
-
-        >>> p = PivotCounter('ABCABC')
-        >>> p.count_sets()
-        Counter({2: 3})
-        >>> p.count_sets(count_func=lambda s: 20 - len(s))
-        Counter({2: 17})
-
         """
+
         def iter_counts():
             for count, elem_set in self.iteritems():
                 for _ in repeat(None, count_func(elem_set)):
@@ -209,13 +171,6 @@ class PivotCounterBase(dict):
             Non-zero counts are discarded.  Not optimied, so
             keep the original ExtremeCounter around if you want
             to be faster or save memory.
-
-        >>> PivotCounter('abbb') + PivotCounter('bcc')
-        PivotCounter({1: ['a'], 2: ['c'], 4: ['b']})
-        >>> PivotCounter(Counter('abbb') + Counter('bcc'))
-        PivotCounter({1: ['a'], 2: ['c'], 4: ['b']})
-
-
         """
         if not isinstance(other, PivotCounterBase):
             return NotImplemented
@@ -224,30 +179,17 @@ class PivotCounterBase(dict):
     def __sub__(self, other):
         """ Subtract the underlying Counters discarding
             non-positive counts and return a new PivotCounter.
-
-        >>> PivotCounter('abbbc') - PivotCounter('bccd')
-        PivotCounter({1: ['a'], 2: ['b']})
-        >>> PivotCounter(Counter('abbbc') - Counter('bccd'))
-        PivotCounter({1: ['a'], 2: ['b']})
         """
         if not isinstance(other, PivotCounterBase):
             return NotImplemented
         return self.__class__(self.unpivot() - other.unpivot())
 
     def add(self, other):
-        ''' Add the underlying Counters without discarding
+        """ Add the underlying Counters without discarding
             non-positive counts. Other than it's counterpart
             the Counter, a new PivotCounter is returned from this
             method.
-
-        >>> a, b = PivotCounter('abbbc'), PivotCounter('bccd')
-        >>> a.subtract(b)
-        PivotCounter({-1: ['c', 'd'], 1: ['a'], 2: ['b']})
-        >>> a.subtract(b).add("xxx")
-        NotImplemented
-        >>> a.subtract(b).add(PivotCounter("xxx"))
-        PivotCounter({1: ['a'], 2: ['b'], 3: ['x']})
-        '''
+        """
         if not isinstance(other, PivotCounterBase):
             return NotImplemented
         otherc = other.unpivot()
@@ -257,14 +199,11 @@ class PivotCounterBase(dict):
         return self.__class__(result)
 
     def subtract(self, other):
-        ''' Subtract the underlying Counters without discarding
+        """ Subtract the underlying Counters without discarding
             non-positive counts. Other than it's counterpart
             the Counter, a new PivotCounter is returned from this
             method.
-
-        >>> PivotCounter('abbbc').subtract(PivotCounter('bccd'))
-        PivotCounter({-1: ['c', 'd'], 1: ['a'], 2: ['b']})
-        '''
+        """
         if not isinstance(other, PivotCounterBase):
             return NotImplemented
         result = self.unpivot()
@@ -272,13 +211,9 @@ class PivotCounterBase(dict):
         return self.__class__(result)
 
     def __or__(self, other):
-        '''Union is about the easiest to convert, but it does not
-        respect the structure of the underlying Counters.
-
-        >>> PivotCounter('abbb') | PivotCounter('bcc')
-        PivotCounter({1: ['a', 'b'], 2: ['c'], 3: ['b']})
-
-        '''
+        """ Union is about the easiest to convert, but it does not
+            respect the structure of the underlying Counters.
+        """
         if not isinstance(other, PivotCounterBase):
             return NotImplemented
         result = self.__class__()
@@ -289,15 +224,9 @@ class PivotCounterBase(dict):
         return result
 
     def __and__(self, other):
-        ''' Intersection leaves only the counts (keys) and
-        things (sets), that have an equal count in each pivot.
-
-        >>> PivotCounter('hello') & PivotCounter('hallo')
-        PivotCounter({1: ['h', 'o'], 2: ['l']})
-        >>> PivotCounter('abbb') & PivotCounter('bcc')
-        PivotCounter()
-
-        '''
+        """ Intersection leaves only the counts (keys) and
+            things (sets), that have an equal count in each pivot.
+        """
         if not isinstance(other, PivotCounterBase):
             return NotImplemented
         result = self.__class__()
