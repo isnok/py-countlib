@@ -2,6 +2,7 @@
 
 set -e
 
+cd src
 find . -name "*.pyc" -delete
 
 #py.test countlib
