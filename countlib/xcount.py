@@ -84,7 +84,7 @@ class ExtremeCounter(Counter):
                     break
                 yield (elem, count)
 
-        return list(limit_most_common(n))
+        return list(limit_most_common(n)) # don't keep whole list
 
     def pivot(self, cls=None):
         """ The pivot table of the Counter.

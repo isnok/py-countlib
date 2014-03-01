@@ -7,7 +7,6 @@
     [(' ', 4), ('!', 4)]
     >>> x.most_common_counts(1, inverse=True)
     [('a', 1), ('c', 1), ('e', 1), ('g', 1), ('k', 1), ('o', 1), ('w', 1), ('r', 1), ('?', 1)]
-    >>> x.__pivot__ = PivotCounter
     >>> x_1 = x.pivot()
     >>> x_1
     PivotCounter({1: ['?', 'a', 'c', 'e', 'g', 'k', 'o', 'r', 'w'], 2: ['h', 'n', 's', 't', 'y'], 3: ['i'], 4: [' ', '!']})
@@ -17,6 +16,8 @@
     >>> x_2
     CoolPivotCounter({1: ['?', 'a', 'c', 'e', 'g', 'k', 'o', 'r', 'w'], 2: ['h', 'n', 's', 't', 'y'], 3: ['i'], 4: [' ', '!']})
     >>> x_2.unpivot() == x
+    True
+    >>> isinstance(x_2.unpivot(), x.__class__)
     True
     >>> x_2.unpivot().__class__ == x.__class__
     True
@@ -28,7 +29,7 @@
 """
 from xcount import ExtremeCounter
 from pivot import PivotCounter
-from coolpivot import CoolPivotCounter
+from pivot import CoolPivotCounter
 
 if __name__ == '__main__':
     import doctest
