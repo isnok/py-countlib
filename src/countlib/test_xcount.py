@@ -18,4 +18,24 @@ def test__getitem__(abc, abctwo):
     assert abctwo["b"] == 3
 
     assert abc["a"] == abc["b"] == abc["c"] == 1
-    #assert len(abc[1:2]) == 3
+    assert not abc[0:1]
+    assert len(abc[1:2]) == 3
+    assert len(abc[:2]) == 3
+    assert len(abc[1:]) == 3
+    assert len(abc[:]) == 3
+
+    assert len(abc[0:1:-1]) == 3
+    assert len(abc[1:2:-1]) == 0
+    assert len(abc[:2:-1]) == 0
+    assert len(abc[1::-1]) == 0
+    assert len(abc[::-1]) == 0
+
+    assert not abctwo[0:1]
+    assert len(abctwo[1:2]) == 2
+    assert len(abctwo[2:]) == 7
+    assert len(abctwo[:]) == 9
+
+    assert len(abctwo[0:1:-1]) == 9
+    assert len(abctwo[1:2:-1]) == 7
+    assert len(abctwo[2::-1]) == 2
+    assert len(abctwo[::-1]) == 0
