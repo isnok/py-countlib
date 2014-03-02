@@ -512,3 +512,219 @@ class AdvancedCounter(Counter):
                 if newcount > 0:
                     result[elem] = newcount
         return result
+
+##
+#  To override if speed hacks demand
+##
+
+    #def __iadd__(self, other):
+        #""" Union the keys, add the counts, skip if <= 0.
+        #"""
+        #result = self.__class__()
+        #if not isinstance(other, Mapping):
+            #for elem, count in self.items():
+                #result[elem] = count + other
+            #return result
+        #for elem, count in self.items():
+            #newcount = count + other[elem]
+            #if newcount > 0:
+                #result[elem] = newcount
+        #for elem, count in other.items():
+            #if elem not in self and count > 0:
+                #result[elem] = 0 + count
+        #return result
+
+    #def __isub__(self, other):
+        #""" Subtract count, but keep only results with positive counts.
+        #"""
+        #result = self.__class__()
+        #if not isinstance(other, Mapping):
+            #for elem, count in self.items():
+                #result[elem] = count - other
+            #return result
+        #for elem, count in self.items():
+            #newcount = count - other[elem]
+            #if newcount > 0:
+                #result[elem] = newcount
+        #for elem, count in other.items():
+            #if elem not in self and count < 0:
+                #result[elem] = 0 - count
+        #return result
+
+    #def __imul__(self, other):
+        #""" Multiply elementwise on the intersection of keys, if the other is a Mapping,
+            #otherwise multiply all counts with other (in that order, to allow magic).
+            #Strip out zero and negative counts only if other is a Mapping.
+        #"""
+        #result = self.__class__()
+
+        #if not isinstance(other, Mapping):
+            #for elem, count in self.items():
+                #result[elem] = count * other
+            #return result
+
+        #for elem, count in self.items():
+            #if not count or elem not in other:
+                #continue
+            #newcount = count * other[elem]
+            #if newcount > 0:
+                #result[elem] = newcount
+        #return result
+
+    #def __idiv__(self, other):
+        #""" Divide elementwise on the intersection of keys if other is a Mapping.
+            #If not, divide all counts with other (in that order, to allow magic).
+            #Zero or negative counts are only stripped if other is a Mapping.
+        #"""
+        #result = self.__class__()
+
+        #if not isinstance(other, Mapping):
+            #for elem, count in self.items():
+                #result[elem] = count / other
+            #return result
+
+        #for elem, count in self.items():
+            #if elem not in other:
+                #continue
+            #newcount = count / other[elem]
+            #if newcount > 0:
+                #result[elem] = newcount
+        #return result
+
+    #def __ipow__(self, other):
+        #""" Exponentiate elements on own keys (base), if other (exponent) is a Mapping.
+            #If not, exponentiate all counts with other (in that order, to allow magic).
+            #Zero or negative counts are not stripped since they are rarely results
+            #of exponentiation (and as such probably interesting to keep when they show up).
+        #"""
+        #result = self.__class__()
+        #if not isinstance(other, Mapping):
+            #for elem, count in self.items():
+                #result[elem] = count ** other
+            #return result
+        #for elem, count in self.items():
+            #newcount = count ** other[elem]
+            #if newcount > 0:
+                #result[elem] = newcount
+        #return result
+
+    #def __imod__(self, other):
+        #""" Modulo elementwise on the intersection of keys if other is a Mapping.
+            #If not, modulo all counts with other (in that order, to allow magic).
+            #Zero counts are kept (since they make sense in modulo arithmetics).
+        #"""
+        #result = self.__class__()
+
+        #if not isinstance(other, Mapping):
+            #for elem, count in self.items():
+                #result[elem] = count % other
+            #return result
+
+        #for elem, count in self.items():
+            #if elem not in other:
+                #continue
+            #newcount = count % other[elem]
+            #result[elem] = newcount
+        #return result
+
+    #def __ior__(self, other):
+        #""" Union is the maximum of value in either of the input counters.
+            #Calculation needs to be done on all keys, even when 
+        #"""
+        #result = self.__class__()
+        #if not isinstance(other, Mapping):
+            #_max = max
+            #for elem, count in self.items():
+                #result[elem] = _max(count, other)
+            #return result
+        #for elem, count in self.items():
+            #other_count = other[elem]
+            #newcount = other_count if count < other_count else count
+            #if newcount > 0:
+                #result[elem] = newcount
+        #for elem, count in other.items():
+            #if elem not in self and count > 0:
+                #result[elem] = count
+        #return result
+
+    #def __iand__(self, other):
+        #""" Intersection is the minimum of corresponding counts.
+            #Calculation is only done on the intersection of keys
+            #if the other is a mapping.
+        #"""
+        #result = self.__class__()
+        #if not isinstance(other, Mapping):
+            #_min = min
+            #for elem, count in self.items():
+                #result[elem] = _min(count, other)
+            #return result
+
+        #for elem, count in self.items():
+            #other_count = other[elem]
+            #newcount = count if count < other_count else other_count
+            #if newcount > 0:
+                #result[elem] = newcount
+        #return result
+
+    #def __ixor__(self, other):
+        #""" Elementwise xor with stripping on both key sets
+            #if other is a Mapping, without if other is treated
+            #as a constant.
+
+            #We implemented a commutative behaviuor for xor,
+            #so the fastest and savest way to archieve same
+            #beaviour is copying the methond to __rxor__.
+        #"""
+        #result = self.__class__()
+        #if not isinstance(other, Mapping):
+            #for elem, count in self.items():
+                #result[elem] = count ^ other
+            #return result
+
+        #for elem, count in self.items():
+            #if elem in other:
+                #newcount = count ^ other[elem]
+                #if newcount > 0:
+                    #result[elem] = newcount
+            #elif count > 0:
+                #result[elem] = count
+        #for elem, count in other.items():
+            #if elem not in self and count > 0:
+                #result[elem] = count
+        #return result
+
+    #def __irshift__(self, other):
+        #""" Shift own keys by the value of other's key if other is a Mapping
+            #throwing out non-positives. Don't throw out, if other is not a mapping.
+        #"""
+        #result = self.__class__()
+        #if not isinstance(other, Mapping):
+            #for elem, count in self.items():
+                #result[elem] = count >> other
+            #return result
+        #for elem, count in self.items():
+            #if elem not in other:
+                #result[elem] = count
+            #else:
+                #newcount = count >> other[elem]
+                #if newcount > 0:
+                    #result[elem] = newcount
+        #return result
+
+    #def __ilshift__(self, other):
+        #""" Shift own keys by the value of other's key if other is a Mapping
+            #throwing out non-positives. Don't throw out, if other is not a mapping.
+        #"""
+        #result = self.__class__()
+        #if not isinstance(other, Mapping):
+            #for elem, count in self.items():
+                #result[elem] = count << other
+            #return result
+        #for elem, count in self.items():
+            #if elem not in other:
+                #result[elem] = count
+            #else:
+                #newcount = count << other[elem]
+                #if newcount > 0:
+                    #result[elem] = newcount
+        #return result
