@@ -1,7 +1,7 @@
 """ Counters strike! """
 from collections import Counter
 from collections import Mapping
-from pivot import CoolPivotCounter
+from pivot import PivotCounter
 from acount import AdvancedCounter
 
 from operator import itemgetter
@@ -10,7 +10,7 @@ from heapq import nlargest, nsmallest
 class ExtremeCounter(AdvancedCounter):
     """ Even more extreme! This version supports slicing by values (counts).
     """
-    __pivot__ = CoolPivotCounter
+    __pivot__ = PivotCounter
 
     def __getitem__(self, key):
         if isinstance(key, slice):
