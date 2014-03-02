@@ -319,7 +319,7 @@ class ExtremeCounter(Counter):
 
     def __and__(self, other):
         """ Intersection is the minimum of corresponding counts.
-            Calculation needs to be done only on the intersection of keys
+            Calculation is only done on the intersection of keys
             if the other is a mapping.
         """
         result = self.__class__()
@@ -335,6 +335,30 @@ class ExtremeCounter(Counter):
             if newcount > 0:
                 result[elem] = newcount
         return result
+
+    def __xor__(self, other):
+        """ Elementwise xor with stripping on both key sets
+            if other is a Mapping, without if other is treated
+            as a constant.
+        """
+        result = self.__class__()
+        if not isinstance(other, Mapping):
+            for elem, count in self.items():
+                result[elem] = count ^ other
+            return result
+
+        for elem, count in self.items():
+            if elem in other:
+                newcount = count ^ other[elem]
+                if newcount > 0:
+                    result[elem] = newcount
+            elif count > 0:
+                result[elem] = count
+        for elem, count in other.items():
+            if elem not in self and count > 0:
+                result[elem] = count
+        return result
+
 
     def __rshift__(self, other):
         """ Shift own keys by the value of other's key if other is a Mapping

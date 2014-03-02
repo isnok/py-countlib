@@ -130,7 +130,7 @@ def test___sub__():
     assert ExtremeCounter('abbbc') - ExtremeCounter('bccd') == ExtremeCounter({'a': 1, 'b': 2})
     assert ExtremeCounter('abbbc') - Counter('bccd') == ExtremeCounter({'a': 1, 'b': 2})
 
-def test_add():
+def test_add(abc, abctwo):
     a = ExtremeCounter('abbb')
     assert a == ExtremeCounter({'a': 1, 'b': 3})
     a.add(ExtremeCounter('bcc'))
@@ -143,6 +143,9 @@ def test_add():
     assert a == ExtremeCounter({'a': 0, 'b': 0, 'c': 0})
     a.add(a=-10)
     assert a["a"] == -10
+    abctwo.add(abc)
+    assert "d" not in abc
+
 
 def test_subtract():
     c = Counter('which')
@@ -302,6 +305,24 @@ def test___and__magic(abc):
     assert (abc & 4)["r"] == 0
     assert (abc & -4)["b"] == -4
     assert (abc & -4)["r"] == 0
+
+def test___xor__():
+    lol = ExtremeCounter('110abbbc') ^ ExtremeCounter('bccdeeef')
+    assert lol
+    assert lol["0"] == 1
+    assert lol["1"] == 2
+    assert lol["b"] == 2
+    assert lol["a"] == 1
+    assert lol["f"] == 1
+    assert lol["e"] == 3
+    assert ExtremeCounter('abbb') ^ Counter('bcc') == ExtremeCounter('abbcc')
+    assert ExtremeCounter('abbbcc') ^ Counter('bcac') == Counter({'b': 2})
+
+def test___xor__magic(abc):
+    assert (abc ^ 4)["b"] == 5
+    assert (abc ^ 4)["r"] == 0
+    assert (abc ^ -4)["b"] == -3
+    assert (abc ^ -4)["r"] == 0
 
 if __name__ == '__main__':
     import pytest
