@@ -90,25 +90,35 @@ class ExtremeCounter(Counter):
     def __add__(self, other):
         """ Union the keys, add the counts.
         """
+        result = self.__class__()
         if not isinstance(other, Counter):
-            return NotImplemented
-        result = ExtremeCounter()
-        for elem in set(self) | set(other):
-            newcount = self[elem] + other[elem]
+            for elem, count in self.items():
+                result[elem] = count + other
+            return result
+        for elem, count in self.items():
+            newcount = count + other[elem]
             if newcount > 0:
                 result[elem] = newcount
+        for elem, count in other.items():
+            if elem not in self and count > 0:
+                result[elem] = 0 + count
         return result
 
     def __sub__(self, other):
         """ Subtract count, but keep only results with positive counts.
         """
+        result = self.__class__()
         if not isinstance(other, Counter):
-            return NotImplemented
-        result = ExtremeCounter()
-        for elem in set(self) | set(other):
-            newcount = self[elem] - other[elem]
+            for elem, count in self.items():
+                result[elem] = count - other
+            return result
+        for elem, count in self.items():
+            newcount = count - other[elem]
             if newcount > 0:
                 result[elem] = newcount
+        for elem, count in other.items():
+            if elem not in self and count < 0:
+                result[elem] = 0 - count
         return result
 
     def add(self, iterable=None, **kwds):
@@ -170,23 +180,31 @@ class ExtremeCounter(Counter):
     def __or__(self, other):
         """ Union is the maximum of value in either of the input counters.
         """
+        result = self.__class__()
         if not isinstance(other, Counter):
-            return NotImplemented
-        _max = max
-        result = ExtremeCounter()
-        for elem in set(self) | set(other):
-            newcount = _max(self[elem], other[elem])
+            _max = max
+            for elem, count in self.items():
+                result[elem] = _max(count, other)
+            return result
+        for elem, count in self.items():
+            other_count = other[elem]
+            newcount = other_count if count < other_count else count
             if newcount > 0:
                 result[elem] = newcount
+        for elem, count in other.items():
+            if elem not in self and count > 0:
+                result[elem] = count
         return result
 
     def __and__(self, other):
         """ Intersection is the minimum of corresponding counts.
         """
-        if not isinstance(other, Counter):
-            return NotImplemented
+        result = self.__class__()
         _min = min
-        result = ExtremeCounter()
+        if not isinstance(other, Counter):
+            for elem, count in self.items():
+                result[elem] = _min(count, other)
+            return result
         if len(self) < len(other):
             self, other = other, self
         for elem in ifilter(self.__contains__, other):

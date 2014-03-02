@@ -89,6 +89,19 @@ def test___neg__(abc, abctwo):
     neg = -abc
     assert neg == ExtremeCounter({'a': -1, 'b': -1, 'c': -1})
 
+def test___add__magic(abc, abctwo):
+    assert abc + 2
+    assert abc + (-100)
+    assert not (abctwo + (-10)) + Counter()
+
+def test___sub__magic(abc, abctwo):
+    assert abc - 2
+    assert not abc - 2 + Counter()
+    assert abc - (-100)
+    assert not (abctwo - 10) + Counter()
+
+def test_value_magic(abc, abctwo):
+    assert (abc * "l" + "o" + "l")["b"] == "lol"
 
 def test___add__():
     assert ExtremeCounter('abbb') + ExtremeCounter('bcc') == ExtremeCounter({'a': 1, 'b': 4, 'c': 2})
@@ -148,10 +161,22 @@ def test___or__():
     assert ExtremeCounter('abbb') | ExtremeCounter('bcc') == ExtremeCounter({'a': 1, 'b': 3, 'c': 2})
     assert ExtremeCounter('abbb') | Counter('bcc') == ExtremeCounter({'a': 1, 'b': 3, 'c': 2})
 
+def test___or__magic(abc):
+    assert (abc | 4)["b"] == 4
+    assert (abc | 4)["r"] == 0
+    assert (abc | -4)["b"] == 1
+    assert (abc | -4)["r"] == 0
+
 def test___and__():
     assert ExtremeCounter('abbb') & ExtremeCounter('bcc') == ExtremeCounter({'b': 1})
     assert ExtremeCounter('abbb') & Counter('bcc') == ExtremeCounter({'b': 1})
     assert Counter('abbb') & ExtremeCounter('bcc') == Counter({'b': 1})
+
+def test___and__magic(abc):
+    assert (abc & 4)["b"] == 1
+    assert (abc & 4)["r"] == 0
+    assert (abc & -4)["b"] == -4
+    assert (abc & -4)["r"] == 0
 
 if __name__ == '__main__':
     import pytest
