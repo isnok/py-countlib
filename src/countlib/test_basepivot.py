@@ -5,29 +5,11 @@ import string
 from countlib import PivotCounter
 from countlib import CoolPivotCounter
 
-from countlib import ExtremeCounter
 from collections import Counter
 
-base_implementations = set([PivotCounter, CoolPivotCounter])
-
-@pytest.fixture
-def TestSet(TestPivotCounter):
-    if TestPivotCounter == PivotCounter:
-        return set
-    elif TestPivotCounter == CoolPivotCounter:
-        return frozenset
-
-@pytest.fixture
-def other_implementations(TestPivotCounter):
-    return base_implementations.difference([TestPivotCounter])
-
-def pytest_generate_tests(metafunc):
-    if 'TestPivotCounter' in metafunc.fixturenames:
-        metafunc.parametrize('TestPivotCounter', base_implementations)
-
-def test_mutation(TestPivotCounter, other_implementations):
+def test_mutation(TestPivotCounter, other_pivots):
     t = TestPivotCounter("floosh!!!")
-    for cls in other_implementations:
+    for cls in other_pivots:
         x = cls(t)
         assert not x.__class__ == t.__class__
         assert x == t
@@ -103,12 +85,12 @@ def test_most_common(TestPivotCounter):
     assert p.most_common(2, count_func=lambda i: -len(i[1])) == [(5, frozenset(['a'])), (2, frozenset(['r', 'b']))]
     assert p.most_common(2, count_func=lambda i: -len(i[1]), reverse=True) == [(1, frozenset(['!', 'c', 'd'])), (2, frozenset(['r', 'b']))]
 
-def test_elements(TestPivotCounter):
+def test_elements(TestPivotCounter, TestCounter):
     c = TestPivotCounter('ABCABC')
     assert str(sorted(c.elements())) == "['A', 'A', 'B', 'B', 'C', 'C']"
-    d = TestPivotCounter(ExtremeCounter.fromkeys("hejo, test", 0))
+    d = TestPivotCounter(TestCounter.fromkeys("hejo, test", 0))
     assert list(d.elements()) == []
-    d = TestPivotCounter(ExtremeCounter.fromkeys("hejo, test", -100))
+    d = TestPivotCounter(TestCounter.fromkeys("hejo, test", -100))
     assert not set(d.elements())
 
 def test_iter_dirty(TestPivotCounter):
