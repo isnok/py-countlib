@@ -22,4 +22,3 @@ def test___invert__(cnt_abc, cnt_ab2):
     assert e
     assert not +e
     assert +e["b"] == -4
-
