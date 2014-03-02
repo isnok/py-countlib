@@ -229,6 +229,37 @@ def test___truediv__(abc, abctwo):
     assert "f" not in e
     assert e + 0
 
+def test___invert__(abc, abctwo):
+    d = ~abc
+    assert d
+    assert not +d
+    e = ~abctwo
+    assert e
+    assert not +e
+    assert +e["b"] == -4
+
+def test___rshift__(abc, abctwo):
+    d = (abc>>1)
+    assert d
+    assert not +d
+    e = abctwo >> 1
+    assert e
+    assert +e
+    f = (abc+abc) >> abc
+    assert f == abc
+    assert (abc+abc)>>2 == abc * 0
+
+def test___lshift__(abc, abctwo):
+    d = (abc<<1)+abc
+    assert d == abc * 3
+    assert d << 4
+    e = abctwo << 1
+    assert e
+    assert +e
+    f = abc << abc
+    assert f
+    assert f == abc * 2
+    assert not abctwo * 2 - (abctwo << abctwo)
 
 def test___mod__magic(abc, abctwo):
     hehe = abc * "l%sl"

@@ -5,7 +5,6 @@ from pivot import PivotCounter
 
 from operator import itemgetter
 from heapq import nlargest, nsmallest
-from itertools import ifilter
 
 class ExtremeCounter(Counter):
     """ Buffed Counter class. Extreme usefulness to be expected.
@@ -104,6 +103,14 @@ class ExtremeCounter(Counter):
             newcount = +value
             if newcount > 0:
                 result[key] = newcount
+        return result
+
+    def __invert__(self):
+        """ Pass round to all values.
+        """
+        result = self.__class__()
+        for elem, count in self.items():
+            result[elem] = ~count
         return result
 
 
@@ -292,6 +299,7 @@ class ExtremeCounter(Counter):
 
     def __or__(self, other):
         """ Union is the maximum of value in either of the input counters.
+            Calculation needs to be done on all keys, even when 
         """
         result = self.__class__()
         if not isinstance(other, Mapping):
@@ -311,17 +319,55 @@ class ExtremeCounter(Counter):
 
     def __and__(self, other):
         """ Intersection is the minimum of corresponding counts.
+            Calculation needs to be done only on the intersection of keys
+            if the other is a mapping.
         """
         result = self.__class__()
-        _min = min
         if not isinstance(other, Mapping):
+            _min = min
             for elem, count in self.items():
                 result[elem] = _min(count, other)
             return result
-        if len(self) < len(other):
-            self, other = other, self
-        for elem in ifilter(self.__contains__, other):
-            newcount = _min(self[elem], other[elem])
+
+        for elem, count in self.items():
+            other_count = other[elem]
+            newcount = count if count < other_count else other_count
             if newcount > 0:
                 result[elem] = newcount
+        return result
+
+    def __rshift__(self, other):
+        """ Shift own keys by the value of other's key if other is a Mapping
+            throwing out non-positives. Don't throw out, if other is not a mapping.
+        """
+        result = self.__class__()
+        if not isinstance(other, Mapping):
+            for elem, count in self.items():
+                result[elem] = count >> other
+            return result
+        for elem, count in self.items():
+            if elem not in other:
+                result[elem] = count
+            else:
+                newcount = count >> other[elem]
+                if newcount > 0:
+                    result[elem] = newcount
+        return result
+
+    def __lshift__(self, other):
+        """ Shift own keys by the value of other's key if other is a Mapping
+            throwing out non-positives. Don't throw out, if other is not a mapping.
+        """
+        result = self.__class__()
+        if not isinstance(other, Mapping):
+            for elem, count in self.items():
+                result[elem] = count << other
+            return result
+        for elem, count in self.items():
+            if elem not in other:
+                result[elem] = count
+            else:
+                newcount = count << other[elem]
+                if newcount > 0:
+                    result[elem] = newcount
         return result
