@@ -295,10 +295,17 @@ def test___or__magic(abc):
     assert (abc | -4)["b"] == 1
     assert (abc | -4)["r"] == 0
 
+def test___ror__():
+    assert Counter('bcc') | ExtremeCounter('abbb') == ExtremeCounter({'a': 1, 'b': 3, 'c': 2})
+    assert 4 | ExtremeCounter('a') == ExtremeCounter("aaaa")
+
 def test___and__():
     assert ExtremeCounter('abbb') & ExtremeCounter('bcc') == ExtremeCounter({'b': 1})
     assert ExtremeCounter('abbb') & Counter('bcc') == ExtremeCounter({'b': 1})
+
+def test___rand__():
     assert Counter('abbb') & ExtremeCounter('bcc') == Counter({'b': 1})
+    assert 4 & ExtremeCounter("aa") == dict(a=2)
 
 def test___and__magic(abc):
     assert (abc & 4)["b"] == 1
@@ -317,6 +324,10 @@ def test___xor__():
     assert lol["e"] == 3
     assert ExtremeCounter('abbb') ^ Counter('bcc') == ExtremeCounter('abbcc')
     assert ExtremeCounter('abbbcc') ^ Counter('bcac') == Counter({'b': 2})
+
+def test___rxor__():
+    assert Counter('cabc') ^ ExtremeCounter('abbbcc') == Counter({'b': 2})
+    assert 1 ^ ExtremeCounter('abbbcc') == ExtremeCounter({'a': 0, 'b': 2, 'c': 3})
 
 def test___xor__magic(abc):
     assert (abc ^ 4)["b"] == 5
