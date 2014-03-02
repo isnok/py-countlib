@@ -1,16 +1,6 @@
 import pytest
 
-from countlib import AdvancedCounter
-from countlib import ExtremeCounter
 from collections import Counter
-
-base_implementations = (AdvancedCounter, ExtremeCounter)
-
-from collections import Counter
-
-def pytest_generate_tests(metafunc):
-    if 'TestCounter' in metafunc.fixturenames:
-        metafunc.parametrize('TestCounter', base_implementations)
 
 @pytest.fixture
 def abc(TestCounter):
@@ -79,6 +69,8 @@ def test_fromkeys(TestCounter):
     assert x + x == TestCounter.fromkeys(x, 50+50)
 
 def test___repr__(TestCounter):
+    from countlib import AdvancedCounter
+    from countlib import ExtremeCounter
     assert TestCounter('bumm') == TestCounter({'b': 1, 'm': 2, 'u': 1})
     assert TestCounter({'b': 1, 'm': 2, 'u': 1}) == TestCounter({'b': 1, 'm': 2, 'u': 1})
     for stuff in ('abc', 'bcccnnno', (12,12,3,4,5,3,3)):
