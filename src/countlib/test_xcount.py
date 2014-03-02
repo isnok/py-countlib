@@ -265,6 +265,10 @@ def test___rshift__(abc, abctwo):
     assert f == abc
     assert (abc+abc)>>2 == abc * 0
 
+def test__rrshift__(abc):
+    assert 2 >> abc == abc
+    assert Counter("abc") >> abc == {}
+
 def test___lshift__(abc, abctwo):
     d = (abc<<1)+abc
     assert d == abc * 3
@@ -276,6 +280,10 @@ def test___lshift__(abc, abctwo):
     assert f
     assert f == abc * 2
     assert not abctwo * 2 - (abctwo << abctwo)
+
+def test__rlshift__(abc):
+    assert 1 << abc == abc + abc
+    assert Counter("abc") << abc == 2 * abc
 
 def test___mod__magic(abc, abctwo):
     hehe = abc * "l%sl"

@@ -463,6 +463,25 @@ class ExtremeCounter(Counter):
                     result[elem] = newcount
         return result
 
+    def __rrshift__(self, other):
+        """ Shift own keys by the value of other's key if other is a Mapping
+            throwing out non-positives. Don't throw out, if other is not a mapping.
+            Second version of non-commutative operation.
+        """
+        result = self.__class__()
+        if not isinstance(other, Mapping):
+            for elem, count in self.items():
+                result[elem] = other >> count
+            return result
+        for elem, count in self.items():
+            if elem not in other:
+                result[elem] = count
+            else:
+                newcount = other[elem] >> count
+                if newcount > 0:
+                    result[elem] = newcount
+        return result
+
     def __lshift__(self, other):
         """ Shift own keys by the value of other's key if other is a Mapping
             throwing out non-positives. Don't throw out, if other is not a mapping.
@@ -477,6 +496,25 @@ class ExtremeCounter(Counter):
                 result[elem] = count
             else:
                 newcount = count << other[elem]
+                if newcount > 0:
+                    result[elem] = newcount
+        return result
+
+    def __rlshift__(self, other):
+        """ Shift own keys by the value of other's key if other is a Mapping
+            throwing out non-positives. Don't throw out, if other is not a mapping.
+            Second version of non-commutative operation.
+        """
+        result = self.__class__()
+        if not isinstance(other, Mapping):
+            for elem, count in self.items():
+                result[elem] = other << count
+            return result
+        for elem, count in self.items():
+            if elem not in other:
+                result[elem] = count
+            else:
+                newcount = other[elem] << count
                 if newcount > 0:
                     result[elem] = newcount
         return result
