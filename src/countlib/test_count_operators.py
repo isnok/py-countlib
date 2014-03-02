@@ -1,20 +1,26 @@
 import pytest
 
+from countlib import AdvancedCounter
 from countlib import ExtremeCounter
 from collections import Counter
 
-@pytest.fixture
-def abc():
-    return ExtremeCounter("abc")
+base_implementations = (AdvancedCounter, ExtremeCounter)
 
 @pytest.fixture
-def abctwo():
-    return ExtremeCounter("abcabbcccddeefgggggghiii")
+def abc(TestCounter):
+    return TestCounter("abc")
 
+@pytest.fixture
+def abctwo(TestCounter):
+    return TestCounter("abcabbcccddeefgggggghiii")
 
-def test___neg__(abc, abctwo):
+def pytest_generate_tests(metafunc):
+    if 'TestCounter' in metafunc.fixturenames:
+        metafunc.parametrize('TestCounter', base_implementations)
+
+def test___neg__(TestCounter, abc, abctwo):
     neg = -abc
-    assert neg == ExtremeCounter({'a': -1, 'b': -1, 'c': -1})
+    assert neg == TestCounter({'a': -1, 'b': -1, 'c': -1})
 
 def test___abs__(abc, abctwo):
     neg = -abc
@@ -44,38 +50,38 @@ def test___sub__magic(abc, abctwo):
 def test_value_magic(abc, abctwo):
     assert (abc * "l" + "o" + "l")["b"] == "lol"
 
-def test___add__():
-    assert ExtremeCounter('abbb') + ExtremeCounter('bcc') == ExtremeCounter({'a': 1, 'b': 4, 'c': 2})
-    assert ExtremeCounter('abbb') + Counter('bcc') == ExtremeCounter({'a': 1, 'b': 4, 'c': 2})
-    assert ExtremeCounter('aaa') + ExtremeCounter.fromkeys('a', -1) == ExtremeCounter({'a': 2})
-    assert ExtremeCounter('aaa') + ExtremeCounter.fromkeys('a', -3) == ExtremeCounter()
+def test___add__(TestCounter):
+    assert TestCounter('abbb') + TestCounter('bcc') == TestCounter({'a': 1, 'b': 4, 'c': 2})
+    assert TestCounter('abbb') + Counter('bcc') == TestCounter({'a': 1, 'b': 4, 'c': 2})
+    assert TestCounter('aaa') + TestCounter.fromkeys('a', -1) == TestCounter({'a': 2})
+    assert TestCounter('aaa') + TestCounter.fromkeys('a', -3) == TestCounter()
 
-def test___sub__():
-    assert ExtremeCounter('abbbc') - ExtremeCounter('bccd') == ExtremeCounter({'a': 1, 'b': 2})
-    assert ExtremeCounter('abbbc') - Counter('bccd') == ExtremeCounter({'a': 1, 'b': 2})
+def test___sub__(TestCounter):
+    assert TestCounter('abbbc') - TestCounter('bccd') == TestCounter({'a': 1, 'b': 2})
+    assert TestCounter('abbbc') - Counter('bccd') == TestCounter({'a': 1, 'b': 2})
 
 def test__rsub__(abc):
     assert 2 - abc == Counter("aabbcc") - (Counter("abcabc") - abc)
 
-def test_add(abc, abctwo):
-    a = ExtremeCounter('abbb')
-    assert a == ExtremeCounter({'a': 1, 'b': 3})
-    a.add(ExtremeCounter('bcc'))
-    assert a == ExtremeCounter({'a': 1, 'b': 4, 'c': 2})
-    assert a + ExtremeCounter.fromkeys('ab', -12) == ExtremeCounter({'c': 2})
-    a.add(ExtremeCounter.fromkeys('ab', -12))
-    assert a == ExtremeCounter({'a': -11, 'b': -8, 'c': 2})
+def test_add(TestCounter, abc, abctwo):
+    a = TestCounter('abbb')
+    assert a == TestCounter({'a': 1, 'b': 3})
+    a.add(TestCounter('bcc'))
+    assert a == TestCounter({'a': 1, 'b': 4, 'c': 2})
+    assert a + TestCounter.fromkeys('ab', -12) == TestCounter({'c': 2})
+    a.add(TestCounter.fromkeys('ab', -12))
+    assert a == TestCounter({'a': -11, 'b': -8, 'c': 2})
     a.add(a)
     a.subtract(a)
-    assert a == ExtremeCounter({'a': 0, 'b': 0, 'c': 0})
+    assert a == TestCounter({'a': 0, 'b': 0, 'c': 0})
     a.add(a=-10)
     assert a["a"] == -10
     abctwo.add(abc)
     assert "d" not in abc
 
 
-def test_subtract():
-    c = Counter('which')
+def test_subtract(TestCounter):
+    c = TestCounter('which')
     c.subtract('witch')             # subtract elements from another iterable
     c.subtract(Counter('watch'))    # subtract elements from another counter
     assert c['h'] == 0              # 2 in which, minus 1 in witch, minus 1 in watch
@@ -235,9 +241,9 @@ def test___pow__(abc, abctwo):
 def test__rpow__(abc):
     assert 2 ** 2 ** abc == Counter("abcabc") ** (Counter("abcabc") ** abc)
 
-def test___or__():
-    assert ExtremeCounter('abbb') | ExtremeCounter('bcc') == ExtremeCounter({'a': 1, 'b': 3, 'c': 2})
-    assert ExtremeCounter('abbb') | Counter('bcc') == ExtremeCounter({'a': 1, 'b': 3, 'c': 2})
+def test___or__(TestCounter):
+    assert TestCounter('abbb') | TestCounter('bcc') == TestCounter({'a': 1, 'b': 3, 'c': 2})
+    assert TestCounter('abbb') | Counter('bcc') == TestCounter({'a': 1, 'b': 3, 'c': 2})
 
 def test___or__magic(abc):
     assert (abc | 4)["b"] == 4
@@ -245,17 +251,17 @@ def test___or__magic(abc):
     assert (abc | -4)["b"] == 1
     assert (abc | -4)["r"] == 0
 
-def test___ror__():
-    assert Counter('bcc') | ExtremeCounter('abbb') == ExtremeCounter({'a': 1, 'b': 3, 'c': 2})
-    assert 4 | ExtremeCounter('a') == ExtremeCounter("aaaa")
+def test___ror__(TestCounter):
+    assert Counter('bcc') | TestCounter('abbb') == TestCounter({'a': 1, 'b': 3, 'c': 2})
+    assert 4 | TestCounter('a') == TestCounter("aaaa")
 
-def test___and__():
-    assert ExtremeCounter('abbb') & ExtremeCounter('bcc') == ExtremeCounter({'b': 1})
-    assert ExtremeCounter('abbb') & Counter('bcc') == ExtremeCounter({'b': 1})
+def test___and__(TestCounter):
+    assert TestCounter('abbb') & TestCounter('bcc') == TestCounter({'b': 1})
+    assert TestCounter('abbb') & Counter('bcc') == TestCounter({'b': 1})
 
-def test___rand__():
-    assert Counter('abbb') & ExtremeCounter('bcc') == Counter({'b': 1})
-    assert 4 & ExtremeCounter("aa") == dict(a=2)
+def test___rand__(TestCounter):
+    assert Counter('abbb') & TestCounter('bcc') == Counter({'b': 1})
+    assert 4 & TestCounter("aa") == dict(a=2)
 
 def test___and__magic(abc):
     assert (abc & 4)["b"] == 1
@@ -263,8 +269,8 @@ def test___and__magic(abc):
     assert (abc & -4)["b"] == -4
     assert (abc & -4)["r"] == 0
 
-def test___xor__():
-    lol = ExtremeCounter('110abbbc') ^ ExtremeCounter('bccdeeef')
+def test___xor__(TestCounter):
+    lol = TestCounter('110abbbc') ^ TestCounter('bccdeeef')
     assert lol
     assert lol["0"] == 1
     assert lol["1"] == 2
@@ -272,12 +278,12 @@ def test___xor__():
     assert lol["a"] == 1
     assert lol["f"] == 1
     assert lol["e"] == 3
-    assert ExtremeCounter('abbb') ^ Counter('bcc') == ExtremeCounter('abbcc')
-    assert ExtremeCounter('abbbcc') ^ Counter('bcac') == Counter({'b': 2})
+    assert TestCounter('abbb') ^ Counter('bcc') == TestCounter('abbcc')
+    assert TestCounter('abbbcc') ^ Counter('bcac') == Counter({'b': 2})
 
-def test___rxor__():
-    assert Counter('cabc') ^ ExtremeCounter('abbbcc') == Counter({'b': 2})
-    assert 1 ^ ExtremeCounter('abbbcc') == ExtremeCounter({'a': 0, 'b': 2, 'c': 3})
+def test___rxor__(TestCounter):
+    assert Counter('cabc') ^ TestCounter('abbbcc') == Counter({'b': 2})
+    assert 1 ^ TestCounter('abbbcc') == TestCounter({'a': 0, 'b': 2, 'c': 3})
 
 def test___xor__magic(abc):
     assert (abc ^ 4)["b"] == 5

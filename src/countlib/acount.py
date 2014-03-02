@@ -1,17 +1,15 @@
 """ Counters strike! """
 from collections import Counter
 from collections import Mapping
-from pivot import CoolPivotCounter
-from acount import AdvancedCounter
+from pivot import PivotCounter
 
 from operator import itemgetter
 from heapq import nlargest, nsmallest
 
-class ExtremeCounter(AdvancedCounter):
-    """ Even more extreme! This version offers
-        an interface for statistics and caching.
+class AdvancedCounter(Counter):
+    """ Buffed Counter class. Advanced usefulness to be expected.
     """
-    __pivot__ = CoolPivotCounter
+    __pivot__ = PivotCounter
 
     def most_common(self, n=None, count_func=None, inverse=False):
         """ List the n most common elements and their counts from the most
@@ -59,7 +57,7 @@ class ExtremeCounter(AdvancedCounter):
         """ Use my counts as keys, and as values the list of elements,
             that have that count.
         """
-        return ExtremeCounter(self.itervalues())
+        return self.__class__(self.itervalues())
 
     @classmethod
     def fromkeys(cls, iterable, v=0):
@@ -69,7 +67,7 @@ class ExtremeCounter(AdvancedCounter):
 
     def __repr__(self):
         """ Output like defaultdict or other dict variants.
-            Of course ExtremeCounters can be copy-pasted.
+            Of course AdvancedCounters can be copy-pasted.
         """
         def stable_output():
             for elem, count in self.iteritems():

@@ -1,5 +1,6 @@
 """ countlib - Charged up Counters.
 """
+from acount import AdvancedCounter
 from xcount import ExtremeCounter
 from pivot import PivotCounter
 from pivot import CoolPivotCounter
