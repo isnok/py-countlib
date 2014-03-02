@@ -39,3 +39,17 @@ def test__getitem__(abc, abctwo):
     assert len(abctwo[1:2:-1]) == 7
     assert len(abctwo[2::-1]) == 2
     assert len(abctwo[::-1]) == 0
+
+def test_pivot():
+    x = ExtremeCounter("yay? nice!! this thing works!")
+    x.update("etsttseststttsetsetse ")
+    assert x.transpose().pivot(PivotCounter) == PivotCounter({1: [5, 6, 9, 11], 2: [3], 3: [2], 8: [1]})
+    x.__pivot__ = PivotCounter
+    assert x.pivot() + x.pivot() == PivotCounter(
+            {10: [' '], 12: ['e'], 18: ['s'], 22: ['t'],
+              2: ['?', 'a', 'c', 'g', 'k', 'o', 'r', 'w'],
+              4: ['h', 'n', 'y'], 6: ['!', 'i']})
+    lol = ExtremeCounter("lollofant!!")
+    troll = ExtremeCounter("trollofant")
+    assert lol.pivot() - troll.pivot() == PivotCounter({1: ['l'], 2: ['!']})
+    assert lol.pivot() + troll.pivot() == PivotCounter({1: ['r'], 2: ['!', 'a', 'f', 'n'], 3: ['t'], 4: ['o'], 5: ['l']})

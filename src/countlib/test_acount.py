@@ -7,7 +7,6 @@ from collections import Counter
 base_implementations = (AdvancedCounter, ExtremeCounter)
 
 from collections import Counter
-from pivot import PivotCounter
 
 def pytest_generate_tests(metafunc):
     if 'TestCounter' in metafunc.fixturenames:
@@ -31,7 +30,6 @@ def test_class(TestCounter):
     y.add(TestCounter.fromkeys('zab.', 3))
     assert y == TestCounter({'.': 1, 'a': 1, 'b': 0, 'y': 2, 'z': 0})
     assert y + Counter() == TestCounter({'.': 1, 'a': 1, 'y': 2})
-    assert y.pivot() == PivotCounter({0: ['b', 'z'], 1: ['.', 'a'], 2: ['y']})
     assert y.transpose() == TestCounter({0: 2, 1: 2, 2: 1})
 
 def test_bool(TestCounter, abc):
@@ -53,20 +51,6 @@ def test_most_common_counts(TestCounter):
     x.update("etsttseststttsetsetse ")
     assert x.most_common_counts(1) == [('t', 11)]
     assert x.most_common_counts(5) == [('t', 11), ('s', 9), ('e', 6), (' ', 5), ('i', 3), ('!', 3)]
-
-def test_pivot(TestCounter):
-    x = TestCounter("yay? nice!! this thing works!")
-    x.update("etsttseststttsetsetse ")
-    assert x.transpose().pivot(PivotCounter) == PivotCounter({1: [5, 6, 9, 11], 2: [3], 3: [2], 8: [1]})
-    x.__pivot__ = PivotCounter
-    assert x.pivot() + x.pivot() == PivotCounter(
-            {10: [' '], 12: ['e'], 18: ['s'], 22: ['t'],
-              2: ['?', 'a', 'c', 'g', 'k', 'o', 'r', 'w'],
-              4: ['h', 'n', 'y'], 6: ['!', 'i']})
-    lol = TestCounter("lollofant!!")
-    troll = TestCounter("trollofant")
-    assert lol.pivot() - troll.pivot() == PivotCounter({1: ['l'], 2: ['!']})
-    assert lol.pivot() + troll.pivot() == PivotCounter({1: ['r'], 2: ['!', 'a', 'f', 'n'], 3: ['t'], 4: ['o'], 5: ['l']})
 
 def test_transpose(TestCounter):
     x = TestCounter("yay? nice!! this thing works!")

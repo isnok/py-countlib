@@ -9,7 +9,8 @@ from heapq import nlargest, nsmallest
 class AdvancedCounter(Counter):
     """ Buffed Counter class. Advanced usefulness to be expected.
     """
-    __pivot__ = PivotCounter
+    __getitem__ = dict.__getitem__ # cache for fast lookup
+    setdefault = dict.setdefault
 
     def most_common(self, n=None, count_func=None, inverse=False):
         """ List the n most common elements and their counts from the most
@@ -45,13 +46,6 @@ class AdvancedCounter(Counter):
                 yield (elem, count)
 
         return list(limit_most_common(n)) # don't keep whole list
-
-    def pivot(self, cls=None):
-        """ The pivot table of the Counter.
-        """
-        if cls:
-            return cls(self)
-        return self.__pivot__(self)
 
     def transpose(self):
         """ Use my counts as keys, and as values the list of elements,

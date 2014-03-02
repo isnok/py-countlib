@@ -37,3 +37,11 @@ class ExtremeCounter(AdvancedCounter):
             raise KeyError(key)
         else:
             return dict.__getitem__(self, key)
+
+    def pivot(self, cls=None):
+        """ The pivot table of the Counter.
+        """
+        if cls:
+            return cls(self)
+        return self.__pivot__(self)
+
