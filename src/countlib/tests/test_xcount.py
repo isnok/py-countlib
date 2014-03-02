@@ -2,7 +2,7 @@ import pytest
 
 from countlib import ExtremeCounter
 from collections import Counter
-from pivot import PivotCounter
+from countlib import PivotCounter
 
 @pytest.fixture
 def abc():

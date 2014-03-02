@@ -94,7 +94,8 @@ def test___pow__(cnt_abc, cnt_ab2):
     assert d
     assert d == cnt_abc
     e = cnt_ab2 ** cnt_abc
-    assert ( (e - 1 + Counter() + 1) ** (cnt_abc - 1) ) == cnt_abc
+    assert e != cnt_ab2
+    assert set(e) == set(cnt_ab2)
 
 def test___or__(TestCounter):
     assert TestCounter('abbb') | TestCounter('bcc') == TestCounter({'a': 1, 'b': 3, 'c': 2})

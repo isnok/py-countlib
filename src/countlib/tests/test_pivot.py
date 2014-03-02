@@ -1,7 +1,7 @@
 import pytest
 
-from pivot import PivotCounter
-from pivot import CoolPivotCounter
+from countlib import PivotCounter
+from countlib import CoolPivotCounter
 from collections import Counter
 
 def test_mutable_class():

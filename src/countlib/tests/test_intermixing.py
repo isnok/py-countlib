@@ -1,8 +1,8 @@
 import pytest
 
-from xcount import ExtremeCounter
-from pivot import PivotCounter
-from pivot import CoolPivotCounter
+from countlib import ExtremeCounter
+from countlib import PivotCounter
+from countlib import CoolPivotCounter
 
 @pytest.fixture
 def x():
