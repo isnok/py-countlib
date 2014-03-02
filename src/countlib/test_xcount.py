@@ -111,6 +111,10 @@ def test___add__magic(abc, abctwo):
     assert abc + (-100)
     assert not +(abctwo + (-10))
 
+def test__radd__(abc):
+    assert 2 + abc == Counter("abcabc") + abc
+
+
 def test___sub__magic(abc, abctwo):
     assert abc - 2
     assert not abc - 2 + Counter()
@@ -129,6 +133,9 @@ def test___add__():
 def test___sub__():
     assert ExtremeCounter('abbbc') - ExtremeCounter('bccd') == ExtremeCounter({'a': 1, 'b': 2})
     assert ExtremeCounter('abbbc') - Counter('bccd') == ExtremeCounter({'a': 1, 'b': 2})
+
+def test__rsub__(abc):
+    assert 2 - abc == Counter("aabbcc") - (Counter("abcabc") - abc)
 
 def test_add(abc, abctwo):
     a = ExtremeCounter('abbb')
@@ -177,6 +184,9 @@ def test___mul__(abc, abctwo):
     assert d["a"] == 4
     assert d["g"] == 0
     assert set(d.keys()) == set("abc")
+
+def test__rmul__(abc):
+    assert 4 * abc == Counter("abcabc") * (Counter("abcabc") * abc)
 
 def test___div__magic(abc, abctwo):
     assert ((abc * 3) / 3) == abc

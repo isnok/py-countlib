@@ -131,6 +131,8 @@ class ExtremeCounter(Counter):
                 result[elem] = 0 + count
         return result
 
+    __radd__ = __add__
+
     def __sub__(self, other):
         """ Subtract count, but keep only results with positive counts.
         """
@@ -146,6 +148,23 @@ class ExtremeCounter(Counter):
         for elem, count in other.items():
             if elem not in self and count < 0:
                 result[elem] = 0 - count
+        return result
+
+    def __rsub__(self, other):
+        """ Subtraction is not commutative.
+        """
+        result = self.__class__()
+        if not isinstance(other, Mapping):
+            for elem, count in self.items():
+                result[elem] = other - count
+            return result
+        for elem, count in self.items():
+            newcount = other[elem] - count
+            if newcount > 0:
+                result[elem] = newcount
+        for elem, count in other.items():
+            if elem not in self and count > 0:
+                result[elem] = count - 0
         return result
 
     def add(self, iterable=None, **kwds):
@@ -202,6 +221,8 @@ class ExtremeCounter(Counter):
             if newcount > 0:
                 result[elem] = newcount
         return result
+
+    __rmul__ = __mul__
 
     def __div__(self, other):
         """ Divide elementwise on the intersection of keys if other is a Mapping.
