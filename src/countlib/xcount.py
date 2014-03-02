@@ -80,18 +80,18 @@ class ExtremeCounter(Counter):
         return '%s({%s})' % (self.__class__.__name__, items)
 
     def __neg__(self):
-        """ Negate all counts.
+        """ Negate all counts. Don't strip any.
         """
-        result = ExtremeCounter()
+        result = self.__class__()
         for key, value in self.iteritems():
             result[key] = -value
         return result
 
     def __add__(self, other):
-        """ Union the keys, add the counts.
+        """ Union the keys, add the counts, skip if <= 0.
         """
         result = self.__class__()
-        if not isinstance(other, Counter):
+        if not isinstance(other, Mapping):
             for elem, count in self.items():
                 result[elem] = count + other
             return result
@@ -108,7 +108,7 @@ class ExtremeCounter(Counter):
         """ Subtract count, but keep only results with positive counts.
         """
         result = self.__class__()
-        if not isinstance(other, Counter):
+        if not isinstance(other, Mapping):
             for elem, count in self.items():
                 result[elem] = count - other
             return result
@@ -157,9 +157,9 @@ class ExtremeCounter(Counter):
             self.subtract(kwds)
 
     def __mul__(self, other):
-        """ Multiply elementwise if the other is a Counter,
-            otherwise multiply all counts with other (in that
-            order, to allow a lot of python magic multiplication).
+        """ Multiply elementwise on the intersection of keys, if the other is a Mapping,
+            otherwise multiply all counts with other (in that order, to allow magic).
+            Strip out zero and negative counts only if other is a Mapping.
         """
         result = self.__class__()
 
@@ -169,19 +169,94 @@ class ExtremeCounter(Counter):
             return result
 
         for elem, count in self.items():
+            if not count or elem not in other:
+                continue
             newcount = count * other[elem]
             if newcount > 0:
                 result[elem] = newcount
-        for elem, count in other.items():
-            if elem not in self and count < 0:
-                result[elem] = 0 * count
+        return result
+
+    def __div__(self, other):
+        """ Divide elementwise on the intersection of keys if other is a Mapping.
+            If not, divide all counts with other (in that order, to allow magic).
+            Zero or negative counts are only stripped if other is a Mapping.
+        """
+        result = self.__class__()
+
+        if not isinstance(other, Mapping):
+            for elem, count in self.items():
+                result[elem] = count / other
+            return result
+
+        for elem, count in self.items():
+            if elem not in other:
+                continue
+            newcount = count / other[elem]
+            if newcount > 0:
+                result[elem] = newcount
+        return result
+
+    def __floordiv__(self, other):
+        """ Floordivide elements on the intersection of keys if other is a Mapping.
+            If not, divide all counts with other (in that order, to allow magic).
+            Zero or negative counts are only stripped if other is a Mapping.
+        """
+        result = self.__class__()
+
+        if not isinstance(other, Mapping):
+            for elem, count in self.items():
+                result[elem] = count // other
+            return result
+
+        for elem, count in self.items():
+            if elem not in other:
+                continue
+            newcount = count // other[elem]
+            if newcount > 0:
+                result[elem] = newcount
+        return result
+
+    def __pow__(self, other):
+        """ Exponentiate elements on own keys (base), if other (exponent) is a Mapping.
+            If not, exponentiate all counts with other (in that order, to allow magic).
+            Zero or negative counts are not stripped since they are rarely results
+            of exponentiation (and as such probably interesting to keep when they show up).
+        """
+        result = self.__class__()
+        if not isinstance(other, Mapping):
+            for elem, count in self.items():
+                result[elem] = count ** other
+            return result
+        for elem, count in self.items():
+            newcount = count ** other[elem]
+            if newcount > 0:
+                result[elem] = newcount
+        return result
+
+    def __mod__(self, other):
+        """ Modulo elementwise on the intersection of keys if other is a Mapping.
+            If not, modulo all counts with other (in that order, to allow magic).
+            Zero counts are kept (since they make sense in modulo arithmetics).
+        """
+        result = self.__class__()
+
+        if not isinstance(other, Mapping):
+            for elem, count in self.items():
+                result[elem] = count % other
+            return result
+
+        for elem, count in self.items():
+            if elem not in other:
+                continue
+            newcount = count % other[elem]
+            result[elem] = newcount
         return result
 
     def __or__(self, other):
         """ Union is the maximum of value in either of the input counters.
         """
         result = self.__class__()
-        if not isinstance(other, Counter):
+        if not isinstance(other, Mapping):
             _max = max
             for elem, count in self.items():
                 result[elem] = _max(count, other)
@@ -201,7 +276,7 @@ class ExtremeCounter(Counter):
         """
         result = self.__class__()
         _min = min
-        if not isinstance(other, Counter):
+        if not isinstance(other, Mapping):
             for elem, count in self.items():
                 result[elem] = _min(count, other)
             return result

@@ -25,6 +25,13 @@ def test_class():
     assert y.pivot() == PivotCounter({0: ['b', 'z'], 1: ['.', 'a'], 2: ['y']})
     assert y.transpose() == ExtremeCounter({0: 2, 1: 2, 2: 1})
 
+def test_bool(abc):
+    assert abc
+    assert bool(abc)
+    assert (not abc) == False
+    assert not ExtremeCounter()
+    assert (not ExtremeCounter()) == True
+
 def test_most_common():
     p = ExtremeCounter('abracadabra!')
     assert p.most_common(3) == [('a', 5), ('b', 2), ('r', 2)]
@@ -156,6 +163,70 @@ def test___mul__(abc, abctwo):
     assert d
     assert d["a"] == 4
     assert d["g"] == 0
+    assert set(d.keys()) == set("abc")
+
+def test___div__magic(abc, abctwo):
+    assert ((abc * 3) / 3) == abc
+    a = abctwo / 2
+    b = abctwo - abctwo / 2
+    for elem, cnt in abctwo.items():
+        if cnt % 2:
+            assert a[elem] + 1 == b[elem]
+        else:
+            assert a[elem] == b[elem]
+
+def test___div__(abc, abctwo):
+    d = abc / abctwo
+    assert not d
+    assert d["a"] == 0
+    assert not d + 1
+    e = abctwo / abc
+    assert e
+    assert e["a"] == 2
+    assert "f" not in e
+    assert e + 0
+
+def test___floordiv__magic(abc, abctwo):
+    assert ((abc * 3) // 3) == abc
+    a = abctwo // 2
+    b = abctwo - abctwo // 2
+    for elem, cnt in abctwo.items():
+        if cnt % 2:
+            assert a[elem] + 1 == b[elem]
+        else:
+            assert a[elem] == b[elem]
+
+def test___floordiv__(abc, abctwo):
+    d = abc // abctwo
+    assert not d
+    assert d["a"] == 0
+    assert not d + 1
+    e = abctwo // abc
+    assert e
+    assert e["a"] == 2
+    assert "f" not in e
+    assert e + 0
+
+def test___mod__magic(abc, abctwo):
+    hehe = abc * "l%sl"
+    hoho = abc * "o"
+    assert hehe % hoho == hehe % "o" == abc * "lol"
+
+def test___mod__(abc, abctwo):
+    assert abc % abctwo
+    assert abc % abctwo == abc
+    assert not (abctwo % abc) == abc
+    assert (abc % abctwo)["b"] == 1
+
+def test___pow__magic(abc, abctwo):
+    assert (abc ** 1.0) ** 2 == (abc ** 1) ** 2
+
+def test___pow__(abc, abctwo):
+    d = abc ** abctwo
+    assert d
+    assert d == abc
+    e = abctwo ** abc
+    assert ( (e - 1 + Counter() + 1) ** (abc - 1) ) == abc
 
 def test___or__():
     assert ExtremeCounter('abbb') | ExtremeCounter('bcc') == ExtremeCounter({'a': 1, 'b': 3, 'c': 2})
