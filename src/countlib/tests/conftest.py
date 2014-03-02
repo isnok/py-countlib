@@ -29,9 +29,9 @@ def TestSet(TestPivotCounter):
 
 @pytest.fixture
 def cnt_abc(TestCounter):
-    return TestCounter("abc")
+    return advanced_counters[TestCounter == AdvancedCounter]("abc")
 
 @pytest.fixture
 def cnt_ab2(TestCounter):
-    return TestCounter("abcabbcccddeefgggggghiii")
+    return advanced_counters[TestCounter == AdvancedCounter]("abcabbcccddeefgggggghiii")
 
