@@ -80,7 +80,8 @@ class ExtremeCounter(Counter):
         return '%s({%s})' % (self.__class__.__name__, items)
 
     def __neg__(self):
-        """ Negate all counts. """
+        """ Negate all counts.
+        """
         result = ExtremeCounter()
         for key, value in self.iteritems():
             result[key] = -value
@@ -144,6 +145,27 @@ class ExtremeCounter(Counter):
                     self[elem] = self_get(elem, 0) - 1
         if kwds:
             self.subtract(kwds)
+
+    def __mul__(self, other):
+        """ Multiply elementwise if the other is a Counter,
+            otherwise multiply all counts with other (in that
+            order, to allow a lot of python magic multiplication).
+        """
+        result = self.__class__()
+
+        if not isinstance(other, Mapping):
+            for elem, count in self.items():
+                result[elem] = count * other
+            return result
+
+        for elem, count in self.items():
+            newcount = count * other[elem]
+            if newcount > 0:
+                result[elem] = newcount
+        for elem, count in other.items():
+            if elem not in self and count < 0:
+                result[elem] = 0 * count
+        return result
 
     def __or__(self, other):
         """ Union is the maximum of value in either of the input counters.

@@ -9,7 +9,7 @@ def abc():
     return ExtremeCounter("abc")
 
 @pytest.fixture
-def abc2():
+def abctwo():
     return ExtremeCounter("abcabbcccddeefgggggghiii")
 
 def test_class():
@@ -85,7 +85,7 @@ def test___repr__():
         x = ExtremeCounter(stuff)
         assert x == eval(repr(x))
 
-def test___neg__(abc, abc2):
+def test___neg__(abc, abctwo):
     neg = -abc
     assert neg == ExtremeCounter({'a': -1, 'b': -1, 'c': -1})
 
@@ -122,6 +122,27 @@ def test_subtract():
     assert c['w'] == -1             # 1 in which, minus 1 in witch, minus 1 in watch
     c.subtract(w=-6)
     assert c['w'] == 5
+
+def test___mul__magic(abc, abctwo):
+    assert abc * 2
+    assert abctwo * 0
+    assert not (abctwo * 0) + Counter()
+    try:
+        assert 0 * abctwo
+        assert not (0 * abctwo) + Counter()
+        assert "Yippie, found a way!"
+    except:
+        assert "hmpf. impossible?"
+    assert abctwo * []
+    wow = abctwo * ["peng"]
+    assert wow["peng"] == 0
+    assert wow["a"] == ["peng", "peng"]
+
+def test___mul__(abc, abctwo):
+    d = (abc * 2) * abctwo
+    assert d
+    assert d["a"] == 4
+    assert d["g"] == 0
 
 def test___or__():
     assert ExtremeCounter('abbb') | ExtremeCounter('bcc') == ExtremeCounter({'a': 1, 'b': 3, 'c': 2})

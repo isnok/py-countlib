@@ -29,6 +29,7 @@ def test_mutation(TestPivotCounter, other_implementations):
     t = TestPivotCounter("floosh!!!")
     for cls in other_implementations:
         x = cls(t)
+        assert not x.__class__ == t.__class__
         assert x == t
         assert x + t
         assert not x - t
