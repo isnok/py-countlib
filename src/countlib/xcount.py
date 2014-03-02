@@ -87,6 +87,26 @@ class ExtremeCounter(Counter):
             result[key] = -value
         return result
 
+    def __abs__(self):
+        """ Absolute of all counts. None are stripped.
+        """
+        result = self.__class__()
+        _abs = abs
+        for key, value in self.iteritems():
+            result[key] = abs(value)
+        return result
+
+    def __pos__(self):
+        """ Positive of all counts. Negative and zero outcomes are stripped.
+        """
+        result = self.__class__()
+        for key, value in self.iteritems():
+            newcount = +value
+            if newcount > 0:
+                result[key] = newcount
+        return result
+
+
     def __add__(self, other):
         """ Union the keys, add the counts, skip if <= 0.
         """
@@ -212,6 +232,24 @@ class ExtremeCounter(Counter):
             if elem not in other:
                 continue
             newcount = count // other[elem]
+            if newcount > 0:
+                result[elem] = newcount
+        return result
+
+    def __truediv__(self, other):
+        """ Don't really know how this works...
+        """
+        result = self.__class__()
+
+        if not isinstance(other, Mapping):
+            for elem, count in self.items():
+                result[elem] = float(count) / other
+            return result
+
+        for elem, count in self.items():
+            if elem not in other:
+                continue
+            newcount = float(count) / other[elem]
             if newcount > 0:
                 result[elem] = newcount
         return result

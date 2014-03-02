@@ -96,16 +96,26 @@ def test___neg__(abc, abctwo):
     neg = -abc
     assert neg == ExtremeCounter({'a': -1, 'b': -1, 'c': -1})
 
+def test___abs__(abc, abctwo):
+    neg = -abc
+    assert abs(neg) == abc
+    neg = -abctwo
+    assert abs(neg) == abctwo
+
+def test___pos__(abc, abctwo):
+    neg = -abc
+    assert not +neg
+
 def test___add__magic(abc, abctwo):
     assert abc + 2
     assert abc + (-100)
-    assert not (abctwo + (-10)) + Counter()
+    assert not +(abctwo + (-10))
 
 def test___sub__magic(abc, abctwo):
     assert abc - 2
     assert not abc - 2 + Counter()
     assert abc - (-100)
-    assert not (abctwo - 10) + Counter()
+    assert not +(abctwo - 10)
 
 def test_value_magic(abc, abctwo):
     assert (abc * "l" + "o" + "l")["b"] == "lol"
@@ -206,6 +216,19 @@ def test___floordiv__(abc, abctwo):
     assert e["a"] == 2
     assert "f" not in e
     assert e + 0
+
+def test___truediv__(abc, abctwo):
+    d = abc.__truediv__(abctwo)
+    assert d
+    assert not +(d - 1)
+    assert d["a"] > 0
+    assert d + 1
+    e = abctwo.__truediv__(abc)
+    assert e
+    assert e["a"] == 2
+    assert "f" not in e
+    assert e + 0
+
 
 def test___mod__magic(abc, abctwo):
     hehe = abc * "l%sl"
