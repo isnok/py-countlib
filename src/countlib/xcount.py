@@ -244,6 +244,27 @@ class ExtremeCounter(Counter):
                 result[elem] = newcount
         return result
 
+    def __rdiv__(self, other):
+        """ Divide elementwise on the intersection of keys if other is a Mapping.
+            If not, divide all counts with other (in that order, to allow magic).
+            Zero or negative counts are only stripped if other is a Mapping.
+            This is the second version of this non-commutative operation.
+        """
+        result = self.__class__()
+
+        if not isinstance(other, Mapping):
+            for elem, count in self.items():
+                result[elem] = other / count
+            return result
+
+        for elem, count in self.items():
+            if elem not in other:
+                continue
+            newcount = other[elem] / count
+            if newcount > 0:
+                result[elem] = newcount
+        return result
+
     def __floordiv__(self, other):
         """ Floordivide elements on the intersection of keys if other is a Mapping.
             If not, divide all counts with other (in that order, to allow magic).
@@ -299,6 +320,20 @@ class ExtremeCounter(Counter):
                 result[elem] = newcount
         return result
 
+    def __rpow__(self, other):
+        """ Exponentiate using own elements as exponents.
+        """
+        result = self.__class__()
+        if not isinstance(other, Mapping):
+            for elem, count in self.items():
+                result[elem] = other ** count
+            return result
+        for elem, count in self.items():
+            newcount = other[elem] ** count
+            if newcount > 0:
+                result[elem] = newcount
+        return result
+
     def __mod__(self, other):
         """ Modulo elementwise on the intersection of keys if other is a Mapping.
             If not, modulo all counts with other (in that order, to allow magic).
@@ -315,6 +350,26 @@ class ExtremeCounter(Counter):
             if elem not in other:
                 continue
             newcount = count % other[elem]
+            result[elem] = newcount
+        return result
+
+    def __rmod__(self, other):
+        """ Modulo elementwise on the intersection of keys if other is a Mapping.
+            If not, modulo all counts with other (in that order, to allow magic).
+            Zero counts are kept (since they make sense in modulo arithmetics).
+            Second variant, of this non-commutative operation.
+        """
+        result = self.__class__()
+
+        if not isinstance(other, Mapping):
+            for elem, count in self.items():
+                result[elem] = other % count
+            return result
+
+        for elem, count in self.items():
+            if elem not in other:
+                continue
+            newcount = other[elem] % count
             result[elem] = newcount
         return result
 

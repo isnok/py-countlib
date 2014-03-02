@@ -209,6 +209,9 @@ def test___div__(abc, abctwo):
     assert "f" not in e
     assert e + 0
 
+def test__rdiv__(abc):
+    assert 1 / abc == Counter("abcabc") / (Counter("abcabc") / abc)
+
 def test___floordiv__magic(abc, abctwo):
     assert ((abc * 3) // 3) == abc
     a = abctwo // 2
@@ -285,6 +288,12 @@ def test___mod__(abc, abctwo):
     assert not (abctwo % abc) == abc
     assert (abc % abctwo)["b"] == 1
 
+def test__rmod__(abctwo):
+    t = 1 % abctwo
+    assert t
+    assert set(t.values()) == set([0,1])
+    assert Counter("abcabc") % +(Counter("abcabc") % abctwo)
+
 def test___pow__magic(abc, abctwo):
     assert (abc ** 1.0) ** 2 == (abc ** 1) ** 2
 
@@ -294,6 +303,9 @@ def test___pow__(abc, abctwo):
     assert d == abc
     e = abctwo ** abc
     assert ( (e - 1 + Counter() + 1) ** (abc - 1) ) == abc
+
+def test__rpow__(abc):
+    assert 2 ** 2 ** abc == Counter("abcabc") ** (Counter("abcabc") ** abc)
 
 def test___or__():
     assert ExtremeCounter('abbb') | ExtremeCounter('bcc') == ExtremeCounter({'a': 1, 'b': 3, 'c': 2})
