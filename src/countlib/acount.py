@@ -122,7 +122,7 @@ class AdvancedCounter(Counter):
                 result[elem] = newcount
         for elem, count in other.items():
             if elem not in self and count > 0:
-                result[elem] = 0 + count
+                result[elem] = count
         return result
 
     __radd__ = __add__ # commutative
@@ -131,7 +131,7 @@ class AdvancedCounter(Counter):
         """ Union the keys, add the counts, skip if <= 0.
         """
         if not isinstance(other, Mapping):
-            for elem, count in self.items():
+            for elem in self.keys():
                 self[elem] += other
             return self
         for elem, count in self.items():
@@ -140,7 +140,7 @@ class AdvancedCounter(Counter):
                 result[elem] = newcount
         for elem, count in other.items():
             if elem not in self and count > 0:
-                self[elem] = 0 + count
+                self[elem] = count
         return self
 
 
@@ -150,7 +150,7 @@ class AdvancedCounter(Counter):
         result = self.__class__()
         if not isinstance(other, Mapping):
             for elem, count in self.items():
-                result[elem] -= other
+                result[elem] = count - other
             return result
         for elem, count in self.items():
             newcount = count - other[elem]
@@ -158,7 +158,7 @@ class AdvancedCounter(Counter):
                 result[elem] = newcount
         for elem, count in other.items():
             if elem not in self and count < 0:
-                result[elem] = 0 - count
+                result[elem] = -count
         return result
 
     def __rsub__(self, other):
@@ -175,14 +175,14 @@ class AdvancedCounter(Counter):
                 result[elem] = newcount
         for elem, count in other.items():
             if elem not in self and count > 0:
-                result[elem] = count - 0
+                result[elem] = count
         return result
 
     def __isub__(self, other):
         """ Subtract count, but keep only results with positive counts.
         """
         if not isinstance(other, Mapping):
-            for elem, count in self.items():
+            for elem in self.keys():
                 self[elem] -= other
             return self
         for elem, count in self.items():
@@ -191,7 +191,7 @@ class AdvancedCounter(Counter):
                 self[elem] = newcount
         for elem, count in other.items():
             if elem not in self and count < 0:
-                self[elem] = 0 - count
+                self[elem] = -count
         return self
 
     def add(self, iterable=None, **kwds):
@@ -257,7 +257,7 @@ class AdvancedCounter(Counter):
             Strip out zero and negative counts only if other is a Mapping.
         """
         if not isinstance(other, Mapping):
-            for elem, count in self.items():
+            for elem in self.keys():
                 self[elem] *= other
             return self
 
@@ -316,7 +316,7 @@ class AdvancedCounter(Counter):
         """
 
         if not isinstance(other, Mapping):
-            for elem, count in self.items():
+            for elem in self.keys():
                 self[elem] /= other
             return self
 
@@ -403,7 +403,7 @@ class AdvancedCounter(Counter):
             of exponentiation (and as such probably interesting to keep when they show up).
         """
         if not isinstance(other, Mapping):
-            for elem, count in self.items():
+            for elem in self.keys():
                 self[elem] **= other
             return self
         for elem, count in self.items():
@@ -457,7 +457,7 @@ class AdvancedCounter(Counter):
             Zero counts are kept (since they make sense in modulo arithmetics).
         """
         if not isinstance(other, Mapping):
-            for elem, count in self.items():
+            for elem in self.keys():
                 self[elem] %= other
             return self
 
@@ -468,7 +468,7 @@ class AdvancedCounter(Counter):
 
     def __or__(self, other):
         """ Union is the maximum of value in either of the input counters.
-            Calculation needs to be done on all keys, even when 
+            Calculation needs to be done on the union of keys.
         """
         result = self.__class__()
         if not isinstance(other, Mapping):
@@ -490,7 +490,7 @@ class AdvancedCounter(Counter):
 
     def __ior__(self, other):
         """ Union is the maximum of value in either of the input counters.
-            Calculation needs to be done on all keys, even when 
+            Calculation needs to be done on the union of keys.
         """
         if not isinstance(other, Mapping):
             _max = max
@@ -520,10 +520,11 @@ class AdvancedCounter(Counter):
             return result
 
         for elem, count in self.items():
-            other_count = other[elem]
-            newcount = count if count < other_count else other_count
-            if newcount > 0:
-                result[elem] = newcount
+            if elem in other:
+                other_count = other[elem]
+                newcount = count if count < other_count else other_count
+                if newcount > 0:
+                    result[elem] = newcount
         return result
 
     __rand__ = __and__
@@ -535,17 +536,18 @@ class AdvancedCounter(Counter):
         """
         if not isinstance(other, Mapping):
             _min = min
-            for elem, count in self.items():
+            for elem in self.keys():
                 self[elem] = _min(count, other)
             return self
 
         for elem, count in self.items():
-            other_count = other[elem]
-            if other_count < count:
-                if other_count < 0:
-                    del self[elem]
-                else:
-                    self[elem] = other_count
+            if elem in other:
+                other_count = other[elem]
+                if other_count < count:
+                    if other_count < 0:
+                        del self[elem]
+                    else:
+                        self[elem] = other_count
         return self
 
     def __xor__(self, other):
@@ -587,8 +589,8 @@ class AdvancedCounter(Counter):
             beaviour is copying the methond to __rxor__.
         """
         if not isinstance(other, Mapping):
-            for elem, count in self.items():
-                self[elem] = count ^ other
+            for elem in self.keys():
+                self[elem] ^= other
             return self
 
         for elem, count in self.items():
@@ -645,8 +647,8 @@ class AdvancedCounter(Counter):
             throwing out non-positives. Don't throw out, if other is not a mapping.
         """
         if not isinstance(other, Mapping):
-            for elem, count in self.items():
-                self[elem] = count >> other
+            for elem in self.keys():
+                self[elem] >>= other
             return self
         for elem, count in self.items():
             if elem not in other:
@@ -699,8 +701,8 @@ class AdvancedCounter(Counter):
             throwing out non-positives. Don't throw out, if other is not a mapping.
         """
         if not isinstance(other, Mapping):
-            for elem, count in self.items():
-                self[elem] = count << other
+            for elem in self.keys():
+                self[elem] <<= other
             return self
         for elem, count in self.items():
             if elem not in other:

@@ -12,6 +12,10 @@ class ExtremeCounter(AdvancedCounter):
         Getting and deleting via slices is supported.
         Setting items via slicing makes little sense, since one counted item
         has only one count, and thus cannot be assigned a range of counts.
+        If slicing recieves a step of None, then it will return an ExtremeCounter
+        with only the keys, whoes values lie in the requested slicing range.
+        Currently only one other step arument is implemented:
+        If step is -1, then the slicing range is inverted.
     """
     __pivot__ = PivotCounter
 
@@ -71,7 +75,7 @@ class ExtremeCounter(AdvancedCounter):
                     for k, v in [ i for i in self.iteritems() if not i[1] < stop ]:
                         dict.__delitem__(self, k)
                 if start is None and stop is None:
-                    return
+                    pass
         elif key in self:
             dict.__delitem__(self, key)
 

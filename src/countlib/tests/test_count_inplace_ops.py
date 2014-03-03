@@ -102,7 +102,7 @@ def test___iand__(cnt_ab2, cnt_abc):
     tmp &= cnt_inp
     assert cnt_ab2 != tmp
     tmp = cnt_inp.copy()
-    assert (cnt_ab2 - 2)["a"] == -2
+    assert (cnt_ab2 - 2)["a"] == 0
     tmp &= (cnt_ab2 - 2)
     assert tmp != cnt_inp
 
