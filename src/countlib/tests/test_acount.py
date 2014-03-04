@@ -1,23 +1,59 @@
 import pytest
 
-from collections import Counter
+from collections import Mapping
 from types import GeneratorType
+from types import IntType
+from types import LongType
 
-def test_init(TestCounter, test_iterable):
+def test_class(TestCounter):
+    assert isinstance(TestCounter(), object)
+    assert isinstance(TestCounter(), dict)
+    assert isinstance(TestCounter(), TestCounter)
+    assert TestCounter().__class__ == TestCounter
+
+def test_init_iterable(TestCounter, test_iterable):
     testval = TestCounter(test_iterable)
-    assert testval == Counter(test_iterable)
+    sth = next(iter(test_iterable))
+    assert sth in testval
+    if not isinstance(test_iterable, Mapping):
+        assert testval[sth] > 0
+    v = testval[sth]
+    assert isinstance(v, IntType) or isinstance(v, LongType)
 
 def test_init_generator(TestCounter, test_generator):
     testval = TestCounter(test_generator)
     assert testval == TestCounter({'a': 2, ' ': 3, 'e': 4, 'h': 5, 's': 2, 't': 4})
 
-def test_class(TestCounter):
-    assert TestCounter().__class__ == TestCounter
-    assert isinstance(TestCounter(), dict)
+def test_init_counterlike(TestCounter, test_iterable):
+    from collections import Counter
+    assert TestCounter(test_iterable) == Counter(test_iterable)
+
+def test_init_counterlike_generator(TestCounter):
+    from collections import Counter
+    assert TestCounter((x for x in "foo")) == Counter((x for x in "foo"))
+
+def test_init_kwds_direct(TestCounter):
+    val = TestCounter(a=4, more=9, test=-3)
+    assert val == TestCounter({'a': 4, 'more': 9, 'test': -3})
+
+def test_init_kwds(TestCounter, test_dict):
+    assert TestCounter(**test_dict) == TestCounter(test_dict)
 
 def test_elements(TestCounter, test_string):
     a = TestCounter(test_string)
     assert sorted(a.elements()) == sorted(test_string)
+
+def test___missing__(TestCounter, test_key):
+    value = TestCounter()
+    assert test_key not in value
+    assert value[test_key] is 0
+
+def test__reduce__(TestCounter, test_dict):
+    tst_counter = TestCounter(test_dict)
+    import pickle
+    pickled = pickle.dumps(tst_counter)
+    assert pickled
+    assert pickle.loads(pickled) == tst_counter
 
 def test_bool(TestCounter):
     testval = TestCounter("true")
