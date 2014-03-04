@@ -77,7 +77,7 @@ def test_del_slicing(abctwo):
 
 def test_pivot():
     x = ExtremeCounter("yay? nice!! this thing works!")
-    x.update("etsttseststttsetsetse ")
+    x.add("etsttseststttsetsetse ")
     assert x.transpose().pivot(PivotCounter) == PivotCounter({1: [5, 6, 9, 11], 2: [3], 3: [2], 8: [1]})
     x.__pivot__ = PivotCounter
     assert x.pivot() + x.pivot() == PivotCounter(

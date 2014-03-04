@@ -19,42 +19,7 @@ class AdvancedCounter(dict):
 
         '''
         super(AdvancedCounter, self).__init__()
-        self.update(iterable, **kwds)
-
-    def update(self, iterable=None, **kwds):
-        '''Like dict.update() but add counts instead of replacing them.
-
-        Source can be an iterable, a dictionary, or another Counter instance.
-
-        >>> c = Counter('which')
-        >>> c.update('witch')           # add elements from another iterable
-        >>> d = Counter('watch')
-        >>> c.update(d)                 # add elements from another counter
-        >>> c['h']                      # four 'h' in which, witch, and watch
-        4
-
-        '''
-        # The regular dict.update() operation makes no sense here because the
-        # replace behavior results in the some of original untouched counts
-        # being mixed-in with all of the other counts for a mismash that
-        # doesn't have a straight-forward interpretation in most counting
-        # contexts.  Instead, we implement straight-addition.  Both the inputs
-        # and outputs are allowed to contain zero and negative counts.
-
-        if iterable is not None:
-            if isinstance(iterable, Mapping):
-                if self:
-                    self_get = self.get
-                    for elem, count in iterable.iteritems():
-                        self[elem] = self_get(elem, 0) + count
-                else:
-                    super(AdvancedCounter, self).update(iterable) # fast path when counter is empty
-            else:
-                self_get = self.get
-                for elem in iterable:
-                    self[elem] = self_get(elem, 0) + 1
-        if kwds:
-            self.update(kwds)
+        self.add(iterable, **kwds)
 
     def elements(self):
         '''Iterator over elements repeating each as many times as its count.
@@ -237,7 +202,6 @@ class AdvancedCounter(dict):
                 self[elem] = count
         return self
 
-
     def __sub__(self, other):
         """ Subtract count, but keep only results with positive counts.
         """
@@ -289,21 +253,54 @@ class AdvancedCounter(dict):
         return self
 
     def add(self, iterable=None, **kwds):
-        """ Add in Counts without discarding non-positive.
-            The (strangely missing) eqivalent of Counter.subtract.
-            Iteration is limited to the key set of other, so default
-            values that are not iterated over will be skipped.
-        """
+        '''Like dict.update() but add counts instead of replacing them.
+
+        Source can be an iterable, a dictionary, or another Counter instance.
+
+        >>> c = Counter('which')
+        >>> c.update('witch')           # add elements from another iterable
+        >>> d = Counter('watch')
+        >>> c.update(d)                 # add elements from another counter
+        >>> c['h']                      # four 'h' in which, witch, and watch
+        4
+
+        '''
+        # The regular dict.update() operation makes no sense here because the
+        # replace behavior results in the some of original untouched counts
+        # being mixed-in with all of the other counts for a mismash that
+        # doesn't have a straight-forward interpretation in most counting
+        # contexts.  Instead, we implement straight-addition.  Both the inputs
+        # and outputs are allowed to contain zero and negative counts.
+
         if iterable is not None:
-            self_get = self.get
             if isinstance(iterable, Mapping):
-                for elem, count in iterable.items():
-                    self[elem] = self_get(elem, 0) + count
+                if self:
+                    self_get = self.get
+                    for elem, count in iterable.iteritems():
+                        self[elem] = self_get(elem, 0) + count
+                else:
+                    super(AdvancedCounter, self).update(iterable) # fast path when counter is empty
             else:
+                self_get = self.get
                 for elem in iterable:
                     self[elem] = self_get(elem, 0) + 1
         if kwds:
             self.add(kwds)
+
+    #def add(self, iterable=None, **kwds):
+        #""" Add in Counts without discarding non-positive.
+            #The (strangely missing) eqivalent of Counter.subtract.
+            #Iteration is limited to the key set of other, so default
+            #values that are not iterated over will be skipped.
+        #"""
+        #if iterable is not None:
+            #self_get = self.get
+            #if isinstance(iterable, Mapping):
+                #for elem, count in iterable.items():
+                    #self[elem] = self_get(elem, 0) + count
+            #else:
+                #for elem in iterable:
+                    #self[elem] = self_get(elem, 0) + 1
 
     def subtract(self, iterable=None, **kwds):
         """ Like dict.update() but subtracts counts instead of replacing them.

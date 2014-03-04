@@ -20,14 +20,17 @@ test_iterables = (
     set(["fii", "beer"]), frozenset("testomat"),
     {"foo": 2, "bar": 5, "lol": -1},
     {"arg": 0, "neg": -199, "pos": 213872},
-    None, # magic to insert a generator
 )
+
+@pytest.fixture
+def test_generator():
+    return (x for x in "test haha tst hehehe")
 
 
 custom_fixtures = {
     "TestCounter": advanced_counters,
     "TestPivotCounter" : pivot_classes,
-    "_test_iterable": test_iterables,
+    "test_iterable": test_iterables,
 }
 
 
@@ -35,12 +38,6 @@ def pytest_generate_tests(metafunc):
     for name, values in custom_fixtures.items():
         if name in metafunc.fixturenames:
             metafunc.parametrize(name, values)
-
-@pytest.fixture
-def test_iterable(_test_iterable):
-    if _test_iterable is None:
-        return (x for x in "test haha tst hehehe")
-    return _test_iterable
 
 @pytest.fixture
 def other_pivots(TestPivotCounter):

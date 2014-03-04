@@ -1,12 +1,47 @@
 import pytest
 
 from collections import Counter
+from types import GeneratorType
 
-def test_elements(TestCounter):
-    a = TestCounter("lalalladrhg")
-    assert "".join(sorted(a.elements())) == "aaadghllllr"
+def test_init(TestCounter, test_iterable):
+    testval = TestCounter(test_iterable)
+    assert testval == Counter(test_iterable)
+
+def test_init_generator(TestCounter, test_generator):
+    testval = TestCounter(test_generator)
+    assert testval == TestCounter({'a': 2, ' ': 3, 'e': 4, 'h': 5, 's': 2, 't': 4})
 
 def test_class(TestCounter):
+    c = TestCounter('abcdeabcdabcaba')
+
+    assert sorted(c) == ['a', 'b', 'c', 'd', 'e']
+    assert ''.join(sorted(c.elements()))   == 'aaaaabbbbcccdde'
+    assert sum(c.values()) == 15
+
+    assert c.most_common(3) == [('a', 5), ('b', 4), ('c', 3)]
+    assert c.most_common_counts(1) == [('a', 5)]
+    assert c.most_common_counts(2) == [('a', 5), ('b', 4)]
+
+    assert c['a'] == 5
+    for elem in 'shazam':
+        c[elem] += 1
+    assert c['a'] == 7
+
+    del c['b']
+    assert c['b'] == 0
+
+    d = TestCounter('simsalabim')
+    c.add(d)
+    assert c['a'] == 9
+
+    c.clear()
+    assert c == TestCounter()
+
+    c = TestCounter('aaabbc')
+    c['b'] -= 2
+    assert c.most_common() == [('a', 3), ('c', 1), ('b', 0)]
+
+def test_features(TestCounter):
     assert TestCounter('zyzygy') == TestCounter({'g': 1, 'y': 3, 'z': 2})
     y = TestCounter("yay.")
     assert y + TestCounter.fromkeys('zab.', 3) == TestCounter({'.': 4, 'a': 4, 'b': 3, 'y': 2, 'z': 3})
@@ -17,6 +52,11 @@ def test_class(TestCounter):
     assert y == TestCounter({'.': 1, 'a': 1, 'b': 0, 'y': 2, 'z': 0})
     assert y + Counter() == TestCounter({'.': 1, 'a': 1, 'y': 2})
     assert y.transpose() == TestCounter({0: 2, 1: 2, 2: 1})
+
+def test_elements(TestCounter):
+    a = TestCounter("lalalladrhg")
+    assert "".join(sorted(a.elements())) == "aaadghllllr"
+
 
 def test_bool(TestCounter, test_iterable):
     testval = TestCounter(test_iterable)
@@ -35,13 +75,13 @@ def test_most_common(TestCounter):
 
 def test_most_common_counts(TestCounter):
     x = TestCounter("yay? nice!! this thing works!")
-    x.update("etsttseststttsetsetse ")
+    x.add("etsttseststttsetsetse ")
     assert x.most_common_counts(1) == [('t', 11)]
     assert x.most_common_counts(5) == [('t', 11), ('s', 9), ('e', 6), (' ', 5), ('i', 3), ('!', 3)]
 
 def test_transpose(TestCounter):
     x = TestCounter("yay? nice!! this thing works!")
-    x.update("etsttseststttsetsetse ")
+    x.add("etsttseststttsetsetse ")
     tp_chain = [
         TestCounter({1: 1}),
         TestCounter({2: 1}),
