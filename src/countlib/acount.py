@@ -1,16 +1,72 @@
 """ Counters strike! """
-from collections import Counter
 from collections import Mapping
 from pivot import PivotCounter
 
 from operator import itemgetter
 from heapq import nlargest, nsmallest
 
-class AdvancedCounter(Counter):
+class AdvancedCounter(dict):
     """ Buffed Counter class. Advanced usefulness to be expected.
     """
     __getitem__ = dict.__getitem__ # cache for fast lookup
     setdefault = dict.setdefault
+
+    def __init__(self, iterable=None, **kwds):
+        '''Create a new, empty Counter object.  And if given, count elements
+        from an input iterable.  Or, initialize the count from another mapping
+        of elements to their counts.
+
+        '''
+        super(AdvancedCounter, self).__init__()
+        self.update(iterable, **kwds)
+
+    def update(self, iterable=None, **kwds):
+        '''Like dict.update() but add counts instead of replacing them.
+
+        Source can be an iterable, a dictionary, or another Counter instance.
+
+        >>> c = Counter('which')
+        >>> c.update('witch')           # add elements from another iterable
+        >>> d = Counter('watch')
+        >>> c.update(d)                 # add elements from another counter
+        >>> c['h']                      # four 'h' in which, witch, and watch
+        4
+
+        '''
+        # The regular dict.update() operation makes no sense here because the
+        # replace behavior results in the some of original untouched counts
+        # being mixed-in with all of the other counts for a mismash that
+        # doesn't have a straight-forward interpretation in most counting
+        # contexts.  Instead, we implement straight-addition.  Both the inputs
+        # and outputs are allowed to contain zero and negative counts.
+
+        if iterable is not None:
+            if isinstance(iterable, Mapping):
+                if self:
+                    self_get = self.get
+                    for elem, count in iterable.iteritems():
+                        self[elem] = self_get(elem, 0) + count
+                else:
+                    super(AdvancedCounter, self).update(iterable) # fast path when counter is empty
+            else:
+                self_get = self.get
+                for elem in iterable:
+                    self[elem] = self_get(elem, 0) + 1
+        if kwds:
+            self.update(kwds)
+
+    def __missing__(self, key):
+        'The count of elements not in the Counter is zero.'
+        # Needed so that self[missing_item] does not raise KeyError
+        return 0
+
+    def __reduce__(self):
+        return self.__class__, (dict(self),)
+
+    def __delitem__(self, elem):
+        'Like dict.__delitem__() but does not raise KeyError for missing values.'
+        if elem in self:
+            super(AdvancedCounter, self).__delitem__(elem)
 
     def most_common(self, n=None, count_func=None, inverse=False):
         """ List the n most common elements and their counts from the most
@@ -58,6 +114,10 @@ class AdvancedCounter(Counter):
         """ Init a constant Counter. Useful for Counter arithmetic.
         """
         return cls(dict.fromkeys(iterable, v))
+
+    def copy(self):
+        'Return a shallow copy.'
+        return self.__class__(self)
 
     def __str__(self):
         """ Output like defaultdict or other dict variants.
