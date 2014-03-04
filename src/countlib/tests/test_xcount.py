@@ -46,6 +46,13 @@ def test_get_slicing(abc, abctwo):
     assert len(abctwo[2::-1]) == 2
     assert len(abctwo[::-1]) == 0
 
+def test_wrong_slicing(abctwo):
+    try:
+        abctwo["a":"b":"boom"]
+        assert False
+    except KeyError, ex:
+        assert ex.message == slice("a","b","boom")
+
 def test_del_slicing(abctwo):
     a = abctwo.copy()
     del a[::-1]

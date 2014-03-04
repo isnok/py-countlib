@@ -200,7 +200,7 @@ class AdvancedCounter(dict):
         for elem, count in self.items():
             newcount = count + other[elem]
             if newcount > 0:
-                result[elem] = newcount
+                self[elem] = newcount
         for elem, count in other.items():
             if elem not in self and count > 0:
                 self[elem] = count
@@ -442,8 +442,47 @@ class AdvancedCounter(dict):
                 result[elem] = newcount
         return result
 
+    def __rfloordiv__(self, other):
+        """ Floordivide elements on the intersection of keys if other is a Mapping.
+            If not, divide all counts with other (in that order, to allow magic).
+            Zero or negative counts are only stripped if other is a Mapping.
+        """
+        result = self.__class__()
+
+        if not isinstance(other, Mapping):
+            for elem, count in self.items():
+                result[elem] = other // count
+            return result
+
+        for elem, count in self.items():
+            if elem not in other:
+                continue
+            newcount = other[elem] // count
+            if newcount > 0:
+                result[elem] = newcount
+        return result
+
+    def __ifloordiv__(self, other):
+        """ Floordivide elements on the intersection of keys if other is a Mapping.
+            If not, divide all counts with other (in that order, to allow magic).
+            Zero or negative counts are only stripped if other is a Mapping.
+        """
+
+        if not isinstance(other, Mapping):
+            for elem, count in self.items():
+                self[elem] //= other
+            return self
+
+        for elem, count in self.items():
+            if elem not in other:
+                continue
+            newcount = count // other[elem]
+            if newcount > 0:
+                self[elem] = newcount
+        return self
+
     def __truediv__(self, other):
-        """ Don't really know how this works...
+        """ Assuming how this works...
         """
         result = self.__class__()
 
@@ -459,6 +498,40 @@ class AdvancedCounter(dict):
             if newcount > 0:
                 result[elem] = newcount
         return result
+
+    def __rtruediv__(self, other):
+        """ Not exactly sure how this works...
+        """
+        result = self.__class__()
+
+        if not isinstance(other, Mapping):
+            for elem, count in self.items():
+                result[elem] = other / float(count)
+            return result
+
+        for elem, count in self.items():
+            if elem not in other:
+                continue
+            newcount = other[elem] / float(count)
+            if newcount > 0:
+                result[elem] = newcount
+        return result
+
+    def __itruediv__(self, other):
+        """ Assuming how this should work...
+        """
+        if not isinstance(other, Mapping):
+            for elem, count in self.items():
+                self[elem] = float(count) / other
+            return self
+
+        for elem, count in self.items():
+            if elem not in other:
+                continue
+            newcount = float(count) / other[elem]
+            if newcount > 0:
+                self[elem] = newcount
+        return self
 
     def __pow__(self, other):
         """ Exponentiate elements on own keys (base), if other (exponent) is a Mapping.
@@ -631,7 +704,7 @@ class AdvancedCounter(dict):
         """
         if not isinstance(other, Mapping):
             _min = min
-            for elem in self.keys():
+            for elem, count in self.items():
                 self[elem] = _min(count, other)
             return self
 

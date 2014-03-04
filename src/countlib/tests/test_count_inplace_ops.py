@@ -36,6 +36,8 @@ def test__iadd__(cnt_abc):
     cnt_inp = cnt_abc.copy()
     cnt_inp += 2
     assert cnt_inp == Counter("abc" * 3)
+    cnt_inp += cnt_abc
+    assert cnt_inp == Counter("abc" * 4)
 
 def test__isub__(cnt_abc):
     cnt_inp = cnt_abc.copy()
