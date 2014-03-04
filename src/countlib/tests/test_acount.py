@@ -140,14 +140,24 @@ def test_fromkeys(TestCounter):
     assert x == TestCounter({'b': ['a', 'x'], 'u': ['a', 'x']})
 
 
-def test___repr__(TestCounter):
-    from countlib import AdvancedCounter
-    from countlib import ExtremeCounter
-    assert TestCounter('bumm') == TestCounter({'b': 1, 'm': 2, 'u': 1})
-    assert TestCounter({'b': 1, 'm': 2, 'u': 1}) == eval("TestCounter({'b': 1, 'm': 2, 'u': 1})")
+def test___repr__(TestCounter, TestCounters):
+    for cls in TestCounters:
+        locals()[cls.__name__] = cls
+    assert repr(TestCounter('b')) == "%s({'b': 1})" % TestCounter.__name__
+    assert TestCounter("bumm") == eval("%s({'b': 1, 'm': 2, 'u': 1})" % TestCounter.__name__)
     for stuff in ('abc', 'bcccnnno', (12,12,3,4,5,3,3)):
         x = TestCounter(stuff)
         assert x == eval(repr(x))
+
+def test___repr__dynamic(TestCounter, TestCounters, test_keys):
+    from random import randint
+    for cls in TestCounters:
+        locals()[cls.__name__] = cls
+    t = TestCounter()
+    big = 1<<200
+    for k in test_keys:
+        t[k] = randint(-big, big)
+    assert t == eval(repr(t))
 
 def test___str__(TestCounter, TestCounters):
     for cls in TestCounters:
@@ -155,6 +165,16 @@ def test___str__(TestCounter, TestCounters):
     for stuff in ('abc', 'bcccnnno', (12,12,3,4,5,3,3)):
         x = TestCounter(stuff)
         assert x == eval(str(x))
+
+def test___str__dynamic(TestCounter, TestCounters, test_iterables):
+    from random import randint
+    for cls in TestCounters:
+        locals()[cls.__name__] = cls
+    strings = [ TestCounter(i).__str__() for i in test_iterables ]
+    things = [ TestCounter(i) for i in test_iterables ]
+    for a, b in zip(strings, things):
+        assert a == str(b)
+        assert eval(a) == b
 
 def test_copy(TestCounter):
     a = TestCounter("holla")
