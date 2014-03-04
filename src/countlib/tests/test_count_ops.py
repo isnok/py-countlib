@@ -16,6 +16,7 @@ def test_op(TestCounter, TestCounters, binop):
         try:
             for c in "abcdefgh":
                 op_emul(t[c], r[c])
+            assert False
         except Exception, ex2:
             assert type(ex) == type(ex2)
             assert ex.message == ex2.message
@@ -23,18 +24,29 @@ def test_op(TestCounter, TestCounters, binop):
     assert "h" not in x
 
     for c in "abcdefg":
-        xc = x[c]
         try:
             xe = op_emul(t[c], r[c])
         except Exception, ex:
-            if c not in r or c not in t and char in "//":
-                continue
+            if (c not in r) or (c not in t) and (char in "//"):
+                xe = 0
             else:
                 raise ex
-        if xe != xc:
-            if char != "^":
-                xe = max(0, xe)
-        assert xe == xc
+        if char == "^":
+            assert (c in x) == (r[c] != t[c])
+            assert xe == x[c]
+        elif char in ("%",):
+            assert (c in x) == (c in r and c in t)
+            assert xe == x[c]
+        elif char in ("|",):
+            assert (c in x) == ((c in r) or (c in t) and xe == x[c])
+        elif char == "&":
+            assert (c in x) == ((c in r) and (c in t))
+            assert xe == x[c]
+        elif xe > 0:
+            assert c in x
+            assert xe == x[c]
+        else:
+            assert c not in x
 
 def test_scalar_op(TestCounter, TestCounters, binop, right_operand):
     char, fname, op_func, op_emul = binop
@@ -54,22 +66,32 @@ def test_scalar_op(TestCounter, TestCounters, binop, right_operand):
 
 
 def test_inplace_op(binop, cnt_abc):
+    """ Test misses count > 0 drops."""
     char, fname, op_func, op_emul = binop
     fname = "__i" + fname[2:]
     cnt_inp = cnt_abc.copy()
     assert hasattr(cnt_inp, fname)
     getattr(cnt_inp, fname)(1)
+    emu = op_emul(1,1)
     assert sorted(cnt_inp.keys()) == sorted(cnt_abc.keys())
-    assert sorted(set(cnt_inp.values())) == [op_emul(1,1)]
+    assert sorted(set(cnt_inp.values())) == [emu]
     getattr(cnt_inp, fname)(cnt_abc)
-    assert sorted(cnt_inp.keys()) == sorted(cnt_abc.keys())
     try:
         double_op = op_emul(op_emul(1,1),1)
         if char != "^":
             double_op = max(0, double_op)
-        assert sorted(set(cnt_inp.values())) == [double_op]
+        if double_op:
+            assert sorted(cnt_inp.keys()) == sorted(cnt_abc.keys())
+            assert sorted(set(cnt_inp.values())) == [double_op]
+        else:
+            if char == "%":
+                assert cnt_inp == cnt_inp.__class__.fromkeys(cnt_abc.keys())
+            else:
+                assert not cnt_inp
     except ZeroDivisionError:
-        if char in "%//":
-            assert True
+        if char in "//":
+            assert not cnt_inp
+        elif char == "%":
+            assert cnt_inp == cnt_inp.__class__.fromkeys(cnt_abc.keys())
         else:
             assert False

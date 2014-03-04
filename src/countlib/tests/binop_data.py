@@ -13,7 +13,7 @@ binops = (
     ("**", "__pow__",      operator.pow,      operator.pow,       ),
     ("%",  "__mod__",      operator.mod,      operator.mod,       ),
     ("|",  "__or__",       operator.or_,      max,                ),
-    ("&",  "__and__",      operator.and_,     min,                ),
+    ("&",  "__and__",      operator.and_,      min,                ),
     ("^",  "__xor__",      operator.xor,      operator.xor,       ),
     (">>", "__rshift__",   operator.rshift,   operator.rshift,    ),
     ("<<", "__lshift__",   operator.lshift,   operator.lshift,    ),
@@ -48,4 +48,3 @@ binop_data_fixtures.update({
     "left_operand"  : left_operands,
     "right_operand" : right_operands,
 })
-

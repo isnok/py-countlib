@@ -201,6 +201,8 @@ class AdvancedCounter(dict):
             newcount = count + other[elem]
             if newcount > 0:
                 self[elem] = newcount
+            else:
+                del self[elem]
         for elem, count in other.items():
             if elem not in self and count > 0:
                 self[elem] = count
@@ -214,13 +216,19 @@ class AdvancedCounter(dict):
             for elem, count in self.items():
                 result[elem] = count - other
             return result
-        for elem, count in self.items():
-            newcount = count - other[elem]
-            if newcount > 0:
-                result[elem] = newcount
         for elem, count in other.items():
-            if elem not in self and count < 0:
-                result[elem] = -count
+            if elem in self:
+                newcount = self[elem] - count
+                if newcount > 0:
+                    result[elem] = newcount
+            else:
+                if count > 0 or not count:
+                    continue
+                else:
+                    result[elem] = -count
+        for elem, count in self.items():
+            if count > 0 and elem not in other:
+                result[elem] = count
         return result
 
     def __rsub__(self, other):
@@ -232,9 +240,10 @@ class AdvancedCounter(dict):
                 result[elem] = other - count
             return result
         for elem, count in self.items():
-            newcount = other[elem] - count
-            if newcount > 0:
-                result[elem] = newcount
+            if elem in other:
+                newcount = other[elem] - count
+                if newcount > 0:
+                    result[elem] = newcount
         for elem, count in other.items():
             if elem not in self and count > 0:
                 result[elem] = count
@@ -247,13 +256,23 @@ class AdvancedCounter(dict):
             for elem in self.keys():
                 self[elem] -= other
             return self
-        for elem, count in self.items():
-            newcount = count - other[elem]
-            if newcount > 0:
-                self[elem] = newcount
         for elem, count in other.items():
-            if elem not in self and count < 0:
-                self[elem] = -count
+            if elem not in self:
+                if count > 0: # don't compare other than gt 0
+                    del self[elem]
+                elif not count:
+                    pass
+                else:
+                    self[elem] = -count
+            else:
+                newcount = count - other[elem]
+                if newcount > 0:
+                    self[elem] = newcount
+                else:
+                    del self[elem]
+        for elem, count in self.items():
+                if not count > 0:
+                    del self[elem]
         return self
 
     def add(self, iterable=None, **kwds):
@@ -361,6 +380,8 @@ class AdvancedCounter(dict):
                 newcount = count * other[elem]
                 if newcount > 0:
                     self[elem] = newcount
+                else:
+                    del self[elem]
         return self
 
     def __div__(self, other):
@@ -420,6 +441,8 @@ class AdvancedCounter(dict):
                 newcount = count / other[elem]
                 if newcount > 0:
                     self[elem] = newcount
+                else:
+                    del self[elem]
         return self
 
     def __floordiv__(self, other):
@@ -479,6 +502,8 @@ class AdvancedCounter(dict):
             newcount = count // other[elem]
             if newcount > 0:
                 self[elem] = newcount
+            else:
+                del self[elem]
         return self
 
     def __truediv__(self, other):
@@ -531,6 +556,8 @@ class AdvancedCounter(dict):
             newcount = float(count) / other[elem]
             if newcount > 0:
                 self[elem] = newcount
+            else:
+                del self[elem]
         return self
 
     def __pow__(self, other):
@@ -578,6 +605,8 @@ class AdvancedCounter(dict):
             newcount = count ** other[elem]
             if newcount > 0:
                 self[elem] = newcount
+            else:
+                del self[elem]
         return self
 
     def __mod__(self, other):
@@ -593,10 +622,9 @@ class AdvancedCounter(dict):
             return result
 
         for elem, count in self.items():
-            if elem not in other:
-                continue
-            newcount = count % other[elem]
-            result[elem] = newcount
+            if elem in other:
+                newcount = count % other[elem]
+                result[elem] = newcount
         return result
 
     def __rmod__(self, other):
@@ -613,10 +641,9 @@ class AdvancedCounter(dict):
             return result
 
         for elem, count in self.items():
-            if elem not in other:
-                continue
-            newcount = other[elem] % count
-            result[elem] = newcount
+            if elem in other:
+                newcount = other[elem] % count
+                result[elem] = newcount
         return result
 
     def __imod__(self, other):
@@ -632,6 +659,8 @@ class AdvancedCounter(dict):
         for elem, count in self.items():
             if elem in other:
                 self[elem] %= other[elem]
+            else:
+                del self[elem]
         return self
 
     def __or__(self, other):
@@ -645,12 +674,15 @@ class AdvancedCounter(dict):
                 result[elem] = _max(count, other)
             return result
         for elem, count in self.items():
-            other_count = other[elem]
-            newcount = other_count if count < other_count else count
-            if newcount > 0:
-                result[elem] = newcount
+            if elem in other:
+                other_count = other[elem]
+                newcount = other_count if count < other_count else count
+                if newcount > 0:
+                    result[elem] = newcount
+            elif count > 0:
+                result[elem] = count
         for elem, count in other.items():
-            if elem not in self and count > 0:
+            if count > 0 and elem not in self:
                 result[elem] = count
         return result
 
@@ -665,14 +697,21 @@ class AdvancedCounter(dict):
             for elem, count in self.items():
                 self[elem] = _max(count, other)
             return self
-        self_get = self.get
         for elem, count in other.items():
             if elem not in self:
                 if count > 0:
                     self[elem] = count
             else:
-                if count > self_get(elem, 0):
+                self_count = self[elem]
+                if count > self_count:
                     self[elem] = count
+                elif self_count > 0:
+                    pass
+                else:
+                    del self[elem]
+        for elem, count in self.items():
+            if count <= 0: #and elem not in other: <- we just made that sure
+                del self[elem]
         return self
 
     def __and__(self, other):
@@ -711,11 +750,16 @@ class AdvancedCounter(dict):
         for elem, count in self.items():
             if elem in other:
                 other_count = other[elem]
-                if other_count < count:
-                    if other_count < 0:
-                        del self[elem]
-                    else:
-                        self[elem] = other_count
+                if not other_count > 0:
+                    del self[elem]
+                elif other_count < count:
+                    self[elem] = other_count
+                elif not count > 0:
+                    del self[elem]
+                else: # count is correct
+                    pass
+            elif not count > 0:
+                del self[elem]
         return self
 
     def __xor__(self, other):
@@ -761,16 +805,16 @@ class AdvancedCounter(dict):
                 self[elem] ^= other
             return self
 
-        for elem, count in self.items():
-            if elem in other:
-                newcount = count ^ other[elem]
+        for elem, count in other.items():
+            if elem in self:
+                newcount = self[elem] ^ count
                 if newcount > 0:
                     self[elem] = newcount
-            elif count > 0:
-                self[elem] = count
-        for elem, count in other.items():
-            if elem not in self and count > 0:
-                self[elem] = count
+                else:
+                    del self[elem]
+        for elem, count in self.items():
+            if count < 0:# and elem not in other:
+                del self[elem]
         return self
 
     def __rshift__(self, other):
@@ -825,6 +869,8 @@ class AdvancedCounter(dict):
                 newcount = count >> other[elem]
                 if newcount > 0:
                     self[elem] = newcount
+                else:
+                    del self[elem]
         return self
 
     def __lshift__(self, other):
@@ -879,4 +925,6 @@ class AdvancedCounter(dict):
                 newcount = count << other[elem]
                 if newcount > 0:
                     self[elem] = newcount
+                else:
+                    del self[elem]
         return self
