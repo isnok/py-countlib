@@ -182,6 +182,7 @@ def test_copy(TestCounter):
     assert b == a
     assert b is not a
     del a["o"]
+    assert "o" in b
     assert b != a
 
 
