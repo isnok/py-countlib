@@ -12,7 +12,7 @@ class PivotCounter(PivotCounterBase):
             Source can be a dictionary or Counter instance or another PivotCounter.
         """
         if iterable is not None:
-            if isinstance(iterable, PivotCounterBase):
+            if isinstance(iterable, PivotCounterBase) and iterable:
                 self.__unpivot__ = iterable.__unpivot__
                 dict.update(self, iterable) # update from other PivotCounter
             elif hasattr(iterable, 'iteritems'): # assumed Counters and dicts
@@ -54,7 +54,7 @@ class CoolPivotCounter(PivotCounterBase):
             Source can be a dictionary or Counter instance or another CoolPivotCounter.
         """
         if iterable is not None:
-            if isinstance(iterable, PivotCounterBase):
+            if isinstance(iterable, PivotCounterBase) and iterable:
                 self.__unpivot__ = iterable.__unpivot__
                 dict.update(self, iterable) # fast path when counter is empty
             elif hasattr(iterable, 'iteritems'): # assumed Counters and dicts
