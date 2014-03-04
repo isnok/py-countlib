@@ -1,10 +1,12 @@
 import pytest
 from count_data import *
 from pivot_data import *
+from binop_data import *
 
 custom_fixtures = {}
 custom_fixtures.update(count_data_fixtures)
 custom_fixtures.update(pivot_data_fixtures)
+custom_fixtures.update(binop_data_fixtures)
 
 def return_returner(values):
     def returner():
