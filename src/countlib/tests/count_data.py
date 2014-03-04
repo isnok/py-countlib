@@ -42,14 +42,15 @@ test_tuples = (
     tuple(range(12) * 4 + range(3,8)),
 )
 test_sets = (
-    set(["fii", "beer"]), frozenset("testomat"),
+    set(["fii", "beer"]),
+    frozenset("testomat"),
 )
 test_dicts = (
     {"foo": 2, "bar": 5, "lol": -1},
     {"arg": 0, "neg": -199, "pos": 213872},
     {"foo": 1<<123, "bar": -(1<<89), "lol": 103},
 )
-test_listlikes = test_strings + test_lists + test_tuples + test_sets
+test_listlikes = test_strings + test_lists + test_tuples
 test_iterables = test_strings + test_lists + test_tuples + test_sets + test_dicts
 
 count_data_fixtures.update({
@@ -64,7 +65,7 @@ count_data_fixtures.update({
 
 @pytest.fixture
 def test_counter(TestCounter, test_iterable):
-    return TestCounter(test_iterables)
+    return TestCounter(test_iterable)
 
 
 test_keys = (

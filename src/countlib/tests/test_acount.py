@@ -6,10 +6,23 @@ from types import IntType
 from types import LongType
 
 def test_class(TestCounter):
-    assert isinstance(TestCounter(), object)
-    assert isinstance(TestCounter(), dict)
-    assert isinstance(TestCounter(), TestCounter)
-    assert TestCounter().__class__ == TestCounter
+    tst = TestCounter()
+    assert isinstance(tst, object)
+    assert isinstance(tst, dict)
+    assert isinstance(tst, TestCounter)
+    assert isinstance(tst, Mapping)
+    assert tst.__class__ == TestCounter
+
+def test_dict(TestCounter):
+    testval = TestCounter("true")
+    assert testval
+    assert bool(testval)
+    assert (not testval) == False
+    assert not TestCounter()
+    assert (not TestCounter()) == True
+    assert testval.keys()
+    assert testval.items()
+    assert testval.values()
 
 def test_init_iterable(TestCounter, test_iterable):
     testval = TestCounter(test_iterable)
@@ -19,6 +32,11 @@ def test_init_iterable(TestCounter, test_iterable):
         assert testval[sth] > 0
     v = testval[sth]
     assert isinstance(v, IntType) or isinstance(v, LongType)
+
+def test_counting(TestCounter, test_listlike):
+    tst = TestCounter(test_listlike)
+    for k in test_listlike:
+        assert tst[k] == test_listlike.count(k)
 
 def test_init_generator(TestCounter, test_generator):
     testval = TestCounter(test_generator)
@@ -47,6 +65,7 @@ def test___missing__(TestCounter, test_key):
     value = TestCounter()
     assert test_key not in value
     assert value[test_key] is 0
+    assert test_key not in value
 
 def test__reduce__(TestCounter, test_dict):
     tst_counter = TestCounter(test_dict)
@@ -55,20 +74,27 @@ def test__reduce__(TestCounter, test_dict):
     assert pickled
     assert pickle.loads(pickled) == tst_counter
 
-def test_bool(TestCounter):
-    testval = TestCounter("true")
-    assert testval
-    assert bool(testval)
-    assert (not testval) == False
-    assert not TestCounter()
-    assert (not TestCounter()) == True
+def test___delitem__(test_counter):
+    del test_counter["not there"]
+    for key in test_counter.keys():
+        assert key in test_counter
+        del test_counter[key]
+        assert key not in test_counter
 
-def test_most_common(TestCounter):
+def test_most_common_static(TestCounter):
     p = TestCounter('abracadabra!')
+    assert isinstance(p.most_common(), list)
+    assert isinstance(p.most_common(1), list)
     assert p.most_common(3) == [('a', 5), ('b', 2), ('r', 2)]
     assert p.most_common(2, inverse=True) == [('!', 1), ('c', 1)]
     assert p.most_common(2, count_func=lambda i: -i[1]) == [('!', 1), ('c', 1)]
     assert p.most_common(2, count_func=lambda i: -i[1], inverse=True) == [('a', 5), ('b', 2)]
+
+def test_most_common_dynamic(TestCounter, test_string):
+    common, most = TestCounter(test_string).most_common(1).pop()
+    assert common in test_string
+    assert most == test_string.count(common)
+
 
 def test_most_common_counts(TestCounter):
     x = TestCounter("yay? nice!! this thing works!")

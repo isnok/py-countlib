@@ -44,11 +44,14 @@ class AdvancedCounter(dict):
         return chain.from_iterable(starmap(repeat, self.iteritems()))
 
     def __missing__(self, key):
-        'The count of elements not in the Counter is zero.'
-        # Needed so that self[missing_item] does not raise KeyError
+        """ The count of elements not in the Counter is zero.
+            Implemented so that self[missing_item] does not raise KeyError
+            Also, the key is not inserted into the counter 'on read'.
+        """
         return 0
 
     def __reduce__(self):
+        """ To be dumpable via the pickle module. """
         return self.__class__, (dict(self),)
 
     def __delitem__(self, elem):
