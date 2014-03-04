@@ -20,64 +20,69 @@ class ExtremeCounter(AdvancedCounter):
     __pivot__ = PivotCounter
 
     def __getitem__(self, key):
-        if isinstance(key, slice):
-            start, stop, step = key.start, key.stop, key.step
-            if step is None:
-                if start is not None and stop is not None:
-                    return self.__class__(**dict([ i for i in self.iteritems() if start <= i[1] < stop ]))
-                if start is not None and stop is None:
-                    return self.__class__(**dict([ i for i in self.iteritems() if start <= i[1] ]))
-                if start is None and stop is not None:
-                    return self.__class__(**dict([ i for i in self.iteritems() if i[1] < stop ]))
-                if start is None and stop is None:
-                    return self.copy()
-            elif step == -1:
-                if start is not None and stop is not None:
-                    return self.__class__(**dict([ i for i in self.iteritems() if not start <= i[1] < stop ]))
-                if start is not None and stop is None:
-                    return self.__class__(**dict([ i for i in self.iteritems() if not start <= i[1] ]))
-                if start is None and stop is not None:
-                    return self.__class__(**dict([ i for i in self.iteritems() if not i[1] < stop ]))
-                if start is None and stop is None:
-                    return self.__class__()
-
-            raise KeyError(key)
-        else:
+        try:
             return dict.__getitem__(self, key)
+        except TypeError, ex:
+            if ex.message == "unhashable type" and isinstance(key, slice):
+                start, stop, step = key.start, key.stop, key.step
+                if step is None:
+                    if start is not None and stop is not None:
+                        return self.__class__(**dict([ i for i in self.iteritems() if start <= i[1] < stop ]))
+                    if start is not None and stop is None:
+                        return self.__class__(**dict([ i for i in self.iteritems() if start <= i[1] ]))
+                    if start is None and stop is not None:
+                        return self.__class__(**dict([ i for i in self.iteritems() if i[1] < stop ]))
+                    if start is None and stop is None:
+                        return self.copy()
+                elif step == -1:
+                    if start is not None and stop is not None:
+                        return self.__class__(**dict([ i for i in self.iteritems() if not start <= i[1] < stop ]))
+                    if start is not None and stop is None:
+                        return self.__class__(**dict([ i for i in self.iteritems() if not start <= i[1] ]))
+                    if start is None and stop is not None:
+                        return self.__class__(**dict([ i for i in self.iteritems() if not i[1] < stop ]))
+                    if start is None and stop is None:
+                        return self.__class__()
+                raise KeyError(key)
+            raise ex
+        raise KeyError(key)
+
 
     def __delitem__(self, key):
         """ Like dict.__delitem__() but does not raise KeyError for missing values.
             Also this supports slicing by values (counts).
         """
-        if isinstance(key, slice):
-            start, stop, step = key.start, key.stop, key.step
-            if step is None:
-                if start is not None and stop is not None:
-                    for k, v in [ i for i in self.iteritems() if start <= i[1] < stop ]:
-                        dict.__delitem__(self, k)
-                if start is not None and stop is None:
-                    for k, v in [ i for i in self.iteritems() if start <= i[1] ]:
-                        dict.__delitem__(self, k)
-                if start is None and stop is not None:
-                    for k, v in [ i for i in self.iteritems() if i[1] < stop ]:
-                        dict.__delitem__(self, k)
-                if start is None and stop is None:
-                    for k in self.keys():
-                        dict.__delitem__(self, k)
-            elif step == -1:
-                if start is not None and stop is not None:
-                    for k, v in [ i for i in self.iteritems() if not start <= i[1] < stop ]:
-                        dict.__delitem__(self, k)
-                if start is not None and stop is None:
-                    for k, v in [ i for i in self.iteritems() if not start <= i[1] ]:
-                        dict.__delitem__(self, k)
-                if start is None and stop is not None:
-                    for k, v in [ i for i in self.iteritems() if not i[1] < stop ]:
-                        dict.__delitem__(self, k)
-                if start is None and stop is None:
-                    pass
-        elif key in self:
-            dict.__delitem__(self, key)
+        try:
+            if key in self:
+                dict.__delitem__(self, key)
+        except TypeError, ex:
+            if ex.message == 'unhashable type' and isinstance(key, slice):
+                start, stop, step = key.start, key.stop, key.step
+                if step is None:
+                    if start is not None and stop is not None:
+                        for k, v in [ i for i in self.iteritems() if start <= i[1] < stop ]:
+                            dict.__delitem__(self, k)
+                    if start is not None and stop is None:
+                        for k, v in [ i for i in self.iteritems() if start <= i[1] ]:
+                            dict.__delitem__(self, k)
+                    if start is None and stop is not None:
+                        for k, v in [ i for i in self.iteritems() if i[1] < stop ]:
+                            dict.__delitem__(self, k)
+                    if start is None and stop is None:
+                        for k in self.keys():
+                            dict.__delitem__(self, k)
+                elif step == -1:
+                    if start is not None and stop is not None:
+                        for k, v in [ i for i in self.iteritems() if not start <= i[1] < stop ]:
+                            dict.__delitem__(self, k)
+                    if start is not None and stop is None:
+                        for k, v in [ i for i in self.iteritems() if not start <= i[1] ]:
+                            dict.__delitem__(self, k)
+                    if start is None and stop is not None:
+                        for k, v in [ i for i in self.iteritems() if not i[1] < stop ]:
+                            dict.__delitem__(self, k)
+                    if start is None and stop is None:
+                        pass
 
     def pivot(self, cls=None):
         """ The pivot table of the Counter.
