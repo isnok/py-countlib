@@ -2,6 +2,7 @@
 from collections import Mapping
 from pivot import PivotCounter
 
+from itertools import chain, repeat, starmap
 from operator import itemgetter
 from heapq import nlargest, nsmallest
 
@@ -54,6 +55,28 @@ class AdvancedCounter(dict):
                     self[elem] = self_get(elem, 0) + 1
         if kwds:
             self.update(kwds)
+
+    def elements(self):
+        '''Iterator over elements repeating each as many times as its count.
+
+        >>> c = Counter('ABCABC')
+        >>> sorted(c.elements())
+        ['A', 'A', 'B', 'B', 'C', 'C']
+
+        # Knuth's example for prime factors of 1836:  2**2 * 3**3 * 17**1
+        >>> prime_factors = Counter({2: 2, 3: 3, 17: 1})
+        >>> product = 1
+        >>> for factor in prime_factors.elements():     # loop over factors
+        ...     product *= factor                       # and multiply them
+        >>> product
+        1836
+
+        Note, if an element's count has been set to zero or is a negative
+        number, elements() will ignore it.
+
+        '''
+        # Emulate Bag.do from Smalltalk and Multiset.begin from C++.
+        return chain.from_iterable(starmap(repeat, self.iteritems()))
 
     def __missing__(self, key):
         'The count of elements not in the Counter is zero.'

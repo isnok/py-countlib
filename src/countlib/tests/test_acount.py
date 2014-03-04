@@ -10,6 +10,11 @@ def abc(TestCounter):
 def abctwo(TestCounter):
     return TestCounter("abcabbcccddeefgggggghiii")
 
+def test_elements(TestCounter):
+    a = TestCounter("lalalladrhg")
+    assert "".join(sorted(a.elements())) == "aaadghllllr"
+
+
 def test_class(TestCounter):
     assert TestCounter('zyzygy') == TestCounter({'g': 1, 'y': 3, 'z': 2})
     y = TestCounter("yay.")
