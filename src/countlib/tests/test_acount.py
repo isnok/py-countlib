@@ -2,18 +2,9 @@ import pytest
 
 from collections import Counter
 
-@pytest.fixture
-def abc(TestCounter):
-    return TestCounter("abc")
-
-@pytest.fixture
-def abctwo(TestCounter):
-    return TestCounter("abcabbcccddeefgggggghiii")
-
 def test_elements(TestCounter):
     a = TestCounter("lalalladrhg")
     assert "".join(sorted(a.elements())) == "aaadghllllr"
-
 
 def test_class(TestCounter):
     assert TestCounter('zyzygy') == TestCounter({'g': 1, 'y': 3, 'z': 2})
@@ -27,10 +18,11 @@ def test_class(TestCounter):
     assert y + Counter() == TestCounter({'.': 1, 'a': 1, 'y': 2})
     assert y.transpose() == TestCounter({0: 2, 1: 2, 2: 1})
 
-def test_bool(TestCounter, abc):
-    assert abc
-    assert bool(abc)
-    assert (not abc) == False
+def test_bool(TestCounter, test_iterable):
+    testval = TestCounter(test_iterable)
+    assert testval
+    assert bool(testval)
+    assert (not testval) == False
     assert not TestCounter()
     assert (not TestCounter()) == True
 
