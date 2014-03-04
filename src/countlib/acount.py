@@ -59,17 +59,28 @@ class AdvancedCounter(Counter):
         """
         return cls(dict.fromkeys(iterable, v))
 
-    def __repr__(self):
+    def __str__(self):
         """ Output like defaultdict or other dict variants.
             Of course AdvancedCounters can be copy-pasted.
         """
         def stable_output():
-            for elem, count in self.iteritems():
-                yield '%r: %r' % (elem, count)
+            return map('%r: %r'.__mod__, sorted(self.items()))
 
         if not self:
             return '%s()' % self.__class__.__name__
-        items = ', '.join(sorted(stable_output()))
+        items = ', '.join(stable_output())
+        return '%s({%s})' % (self.__class__.__name__, items)
+
+    def __repr__(self):
+        """ Output like defaultdict or other dict variants.
+            Of course AdvancedCounters can be copy-pasted.
+        """
+        def just_output():
+            return map('%r: %r'.__mod__, self.items())
+
+        if not self:
+            return '%s()' % self.__class__.__name__
+        items = ', '.join(just_output())
         return '%s({%s})' % (self.__class__.__name__, items)
 
     def __neg__(self):
