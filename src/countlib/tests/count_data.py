@@ -2,12 +2,8 @@ import pytest
 
 from countlib import AdvancedCounter
 from countlib import ExtremeCounter
-from countlib import PivotCounter
-from countlib import CoolPivotCounter
 
 advanced_counters = (AdvancedCounter, ExtremeCounter)
-
-pivot_classes = set([PivotCounter, CoolPivotCounter])
 
 @pytest.fixture
 def test_generator():
@@ -35,20 +31,17 @@ test_dicts = (
 )
 test_iterables = test_strings + test_lists + test_tuples + test_sets + test_dicts
 
-##
-#  Pivot data
-##
 
-@pytest.fixture
-def other_pivots(TestPivotCounter):
-    return pivot_classes.difference([TestPivotCounter])
+count_data_fixtures = {
+    "TestCounter"     : advanced_counters,
+    "test_iterable"   : test_iterables,
+    "test_string"     : test_strings,
+    "test_list"       : test_lists,
+    "test_tuple"      : test_tuples,
+    "test_set"        : test_sets,
+    "test_dict"       : test_dicts,
+}
 
-@pytest.fixture
-def TestSet(TestPivotCounter):
-    if TestPivotCounter == PivotCounter:
-        return set
-    elif TestPivotCounter == CoolPivotCounter:
-        return frozenset
 
 ##
 #  to be deprecated

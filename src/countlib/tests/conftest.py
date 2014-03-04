@@ -1,19 +1,11 @@
 import pytest
-from data import *
-
-custom_fixtures = {
-    "TestCounter"     : advanced_counters,
-    "TestPivotCounter": pivot_classes,
-    "test_iterable"   : test_iterables,
-    "test_string"     : test_strings,
-    "test_list"       : test_lists,
-    "test_tuple"      : test_tuples,
-    "test_set"        : test_sets,
-    "test_dict"       : test_dicts,
-}
-
+from count_data import *
+from pivot_data import *
 
 def pytest_generate_tests(metafunc):
+    custom_fixtures = {}
+    custom_fixtures.update(count_data_fixtures)
+    custom_fixtures.update(pivot_data_fixtures)
     for name, values in custom_fixtures.items():
         if name in metafunc.fixturenames:
             metafunc.parametrize(name, values)
