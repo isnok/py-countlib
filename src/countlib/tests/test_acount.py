@@ -85,25 +85,36 @@ def test_most_common_static(TestCounter):
     p = TestCounter('abracadabra!')
     assert isinstance(p.most_common(), list)
     assert isinstance(p.most_common(1), list)
+    assert not p.most_common(0)
     assert p.most_common(3) == [('a', 5), ('b', 2), ('r', 2)]
     assert p.most_common(2, inverse=True) == [('!', 1), ('c', 1)]
     assert p.most_common(2, count_func=lambda i: -i[1]) == [('!', 1), ('c', 1)]
     assert p.most_common(2, count_func=lambda i: -i[1], inverse=True) == [('a', 5), ('b', 2)]
 
 def test_most_common_dynamic(TestCounter, test_string):
-    common, most = TestCounter(test_string).most_common(1).pop()
+    tst = TestCounter(test_string)
+    common, most = tst.most_common(1).pop()
     assert common in test_string
     assert most == test_string.count(common)
+    for i in range(1,5):
+        assert len(tst.most_common(i)) <= i
 
-
-def test_most_common_counts(TestCounter):
+def test_most_common_counts_static(TestCounter):
     x = TestCounter("yay? nice!! this thing works!")
     x.add("etsttseststttsetsetse ")
     assert x.most_common_counts(1) == [('t', 11)]
     assert x.most_common_counts(5) == [('t', 11), ('s', 9), ('e', 6), (' ', 5), ('i', 3), ('!', 3)]
+    assert x.most_common_counts(1)[0] == x.most_common(1).pop()
+
+def test_most_common_counts_dynamic(TestCounter, test_string):
+    tst = TestCounter(test_string)
+    mc = sorted(tst.most_common())
+    assert sorted(tst.most_common_counts(len(tst))) == mc
+    assert tst.most_common_counts(len(tst)-1) != mc
 
 def test_transpose(TestCounter):
     x = TestCounter("yay? nice!! this thing works!")
+    assert isinstance(x.transpose(), TestCounter)
     x.add("etsttseststttsetsetse ")
     tp_chain = [
         TestCounter({1: 1}),
@@ -113,7 +124,7 @@ def test_transpose(TestCounter):
         TestCounter({1: 3, 4: 1}),
         TestCounter({1: 4, 2: 1, 3: 1, 8: 1}),
         TestCounter({11: 1, 1: 8, 2: 3, 3: 2, 5: 1, 6: 1, 9: 1}),
-        TestCounter({' ': 5, '!': 3, '?': 1, 'a': 1, 'c': 1, 'e': 6, 'g': 1, 'h': 2, 'i': 3, 'k': 1, 'n': 2, 'o': 1, 'r': 1, 's': 9, 't': 11, 'w': 1, 'y': 2}),
+        TestCounter("yay? nice!! this thing works!" + "etsttseststttsetsetse "),
     ]
     old_x = None
     while old_x != x:
@@ -123,19 +134,36 @@ def test_transpose(TestCounter):
 
 def test_fromkeys(TestCounter):
     assert TestCounter.fromkeys('bumm') == TestCounter({'b': 0, 'm': 0, 'u': 0})
-    x = TestCounter.fromkeys('bumm', 50)
-    assert x == TestCounter({'b': 50, 'm': 50, 'u': 50})
-    assert x + x == TestCounter({'b': 100, 'm': 100, 'u': 100})
-    assert x + x == TestCounter.fromkeys(x, 50+50)
+    x = TestCounter.fromkeys('bubb', ['a'])
+    assert x == TestCounter({'b': ['a'], 'u': ['a']})
+    x["b"].append("x")
+    assert x == TestCounter({'b': ['a', 'x'], 'u': ['a', 'x']})
+
 
 def test___repr__(TestCounter):
     from countlib import AdvancedCounter
     from countlib import ExtremeCounter
     assert TestCounter('bumm') == TestCounter({'b': 1, 'm': 2, 'u': 1})
-    assert TestCounter({'b': 1, 'm': 2, 'u': 1}) == TestCounter({'b': 1, 'm': 2, 'u': 1})
+    assert TestCounter({'b': 1, 'm': 2, 'u': 1}) == eval("TestCounter({'b': 1, 'm': 2, 'u': 1})")
     for stuff in ('abc', 'bcccnnno', (12,12,3,4,5,3,3)):
         x = TestCounter(stuff)
         assert x == eval(repr(x))
+
+def test___str__(TestCounter, TestCounters):
+    for cls in TestCounters:
+        locals()[cls.__name__] = cls
+    for stuff in ('abc', 'bcccnnno', (12,12,3,4,5,3,3)):
+        x = TestCounter(stuff)
+        assert x == eval(str(x))
+
+def test_copy(TestCounter):
+    a = TestCounter("holla")
+    b = a.copy()
+    assert b == a
+    assert b is not a
+    del a["o"]
+    assert b != a
+
 
 if __name__ == '__main__':
     import pytest

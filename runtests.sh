@@ -1,5 +1,6 @@
 #!/bin/sh
 
-make clean
+#make clean
 cd src
-python countlib/__init__.py "$@"
+#python countlib/__init__.py "$@"
+py.test -x countlib "$@"

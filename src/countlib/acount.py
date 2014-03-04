@@ -55,7 +55,8 @@ class AdvancedCounter(dict):
         return self.__class__, (dict(self),)
 
     def __delitem__(self, elem):
-        'Like dict.__delitem__() but does not raise KeyError for missing values.'
+        """ Like dict.__delitem__() but does not raise KeyError for missing values.
+        """
         if elem in self:
             super(AdvancedCounter, self).__delitem__(elem)
 
