@@ -9,8 +9,10 @@ from heapq import nlargest, nsmallest
 class AdvancedCounter(dict):
     """ Buffed Counter class. Advanced usefulness to be expected.
     """
-    __getitem__ = dict.__getitem__ # cache for fast lookup
+    # cache methods for fast lookup
+    __getitem__ = dict.__getitem__
     setdefault = dict.setdefault
+    update = dict.update
 
     def __init__(self, iterable=None, **kwds):
         '''Create a new, empty Counter object.  And if given, count elements
