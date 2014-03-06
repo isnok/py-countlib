@@ -1,0 +1,6 @@
+most_common_counts is how it all started.
+I realized, that in my counted real-world-data there where more than one highest score.
+getting that conveniently out of the counter made me start an own variant.
+
+Slicing is another thing, that i find so pythonic. and here it can be applied with such
+a grace!
