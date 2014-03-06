@@ -1,0 +1,7 @@
+iops are more verbose to test.
+but i think that, especially since it is mentioned in the comment, that this op should be .
+also the routine is muuch more memory-efficient, and gives a better runtime as well.
+
+add some quality here. pytests on the way.
+doctest only covers 6/8 cases that would need testing (there_l, there_r, outcome_lives)
+not count > 0 is on purpose.
