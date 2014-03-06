@@ -1,0 +1,16 @@
+When i first read the comment, i took it for granted. Why would it ever make sense to overwrite the counts of a counter the dict way?
+But then, when i had some data analysis to do, and stumbled across the Counter again and wanted to subclass it to add some calculation stuff.
+i came across it a second time, when i started this lib. i was thinking it more of a vector aproach, and at first i implemented scalar operations, and more. When i came to making this implementation compatible to the i realized, that i had added an add method (that had better be named iadd or something)
+
+But what i found out is fundamental: The Counter class is less of a Counter and more of a mMultiset.
+You may agree, with this example:
+Say you have a distributed service, and use counters for any kind of monitoring.
+All the counts are collected at a central point, where they shall be merged into the global counter.
+At this point dict.update makes total sense, even the name!!
+Not only that, but also i was first startled by the presence of the subtract method. I implemented even an add method to counter it and did not realize for some time, that this was just the same as Counter.update!
+Anyway i find that some integrity gets lost by this not-required forbidding of efficient functions, in favor of a seemingly semantically more correct version.
+What Counter.update basically does, is it *counts* the iterable. having subtract be the complement of that is not more (probably even less) confusing and invasive. So: give us back our dict.update functionality (it's so fast!) and move its current content to a method called count!
+
+The collections module claims to be fast and efficient. This seems to be another exception from this rule.
+Line 492 reveals the real bug. If you trust in users to either read the source or read the docs (wich would need to be comprehensive then in some ways), then there is no necessity at all.
+Just extending the existing behaviour would also work, since nobody would have expected Counter.update to behave different from dict.update if they had read about a count method the first time they got a glimpse of the api.

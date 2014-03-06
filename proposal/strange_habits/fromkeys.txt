@@ -1,0 +1,12 @@
+Who decided, that neither i nor anybody in this cosmos would ever need a method to initialize a counter with constant counts!?!
+Especially since these people also did not think of a way to initialize the counter other than having it count.
+but what, if i want to use it as a generator rather than as a storage?
+or what, if i want to be smart, and add negative constant values to resize my counter until it fits my highscore_table_size?
+PLEASE!! open up the possibilities.
+
+Oh what? i just read the completely wrong comment about it!
+Why should setting the value to 1 mean that no element can have a count greater than what?
+
+It just creates a dict with constant values!!! what is so wrong about Counter.fromkeys("abcd", 3)
+why should i be forced to do the loop myself if i find it too expensive to issue Counter("abcd" * 4), because it counts every single letter.
+
