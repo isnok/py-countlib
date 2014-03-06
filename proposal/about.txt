@@ -1,0 +1,10 @@
+i have a personal background in mathematics. In fact i studied it for 8 good years
+specializing in algebra. And i am also very affine to python, and do by now program
+in it for about ten years.
+
+The extensive review of the Counter class, that i present here, is a result of both
+of these personal interests: python and algebra.
+
+I would like to help improve the issues that i found by delivering constructive feedback
+and also share some new ideas that i had during implementation of my own Counter class.
+May it be of good use.
