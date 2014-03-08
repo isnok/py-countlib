@@ -326,6 +326,8 @@ class AdvancedCounter(dict):
             #else:
                 #for elem in iterable:
                     #self[elem] = self_get(elem, 0) + 1
+        #if kwds:
+            #self.add(kwds)
 
     def subtract(self, iterable=None, **kwds):
         """ Like dict.update() but subtracts counts instead of replacing them.
