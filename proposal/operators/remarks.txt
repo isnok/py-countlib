@@ -1,7 +1,14 @@
-iops are more verbose to test.
-but i think that, especially since it is mentioned in the comment, that this op should be .
-also the routine is muuch more memory-efficient, and gives a better runtime as well.
+i knnow, iops are more verbose to test.
+implementing this might break code, that subclasses Counter, overrides the __add__ method
+and does not implement a new __iadd__ method, but uses += or similar.
+These can in my eyes be considered not very common.
 
-add some quality here. pytests on the way.
+but i think that, especially since it is mentioned in the comment, that the operation +=
+should be implemented efficiently.  also the new routine is muuch more memory-saving, and
+should give better run times as well.
+
+i will add some quality to this proposal. pytests on the way.
 doctest only covers 6/8 cases that would need testing (there_l, there_r, outcome_lives)
-not count > 0 is on purpose.
+
+the not count > 0 is on purpose, but might need reconsideration since i just found out,
+that comparison seemingly never raises an error.

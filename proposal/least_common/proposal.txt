@@ -1,5 +1,7 @@
 i like the keyword variant more. it uses less code and still very clean. but a little confusing, probably.
-the second variant is a no-brainer, and will be understood most easily.
+('give me the most common ... from the bottom' is kind of a late turn)
+
+the second variant is a no-brainer to code, and it's invocation will likely be understood more easily.
 
 i think the least counts are often just the second thing somebody asks for, after you tell him the most common.
 for that reason i find that this feature should be included, since it's also already almost there.

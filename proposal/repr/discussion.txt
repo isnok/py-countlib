@@ -1,11 +1,30 @@
-this has quality of a bug.
-the python docs state, that __repr__ is to return a machine readable representation of the object (reference!!)
-furtheron __str__ be the method to return a human-readable representation.
+i think this almost qualifies as a bug, and could be fixed without much trouble.
+
+the python docs state, that __repr__ is to return a machine readable representation of an object,
+while __str__ should be the method to return a human-readable representation.
 
 what happens, is that the items are sorted (!most_common?) prior to stringification.
 is this really needed for a machine-readable representation?
-sorting the stringified items would be possible too (and faster), but less human-comprehendable from my point of view.
-also there is rarely a benefit from using most_common.
-looking closely we can see, that the sorting is done *only* by the count wich is not guaranteed to be unique. thus not even a stable way of outputting Counters is archieved by the current implementation.
-I guess, that people rarely test the stringification of a Counter against another. What matters much more i guess is the fact that you can just re-eval the string and get your counter back.
-But implementing this would also help the use of counters in doctests. Maybe even some people have some doctests out there that need to be fixed, but hey, they were built on the wrong a slightly wrong assumption, that the (only) stringification counters offer would be somewhat stable.
+
+sorting the stringified items would be possible, too (and faster).
+but the outcome would be a little less human-comprehendable (my point of view).
+
+also there is rarely a benefit from using most_common: looking closely, we can see,
+that the sorting is done *only* by the count, wich is not guaranteed to be unique.
+thus the current implementation might not even archieve a stable way of outputting Counters,
+Implementing this might help the use of counters in doctests.
+Maybe even some people have some doctests out there that need to be fixed,
+but then they were built on the a slightly wrong assumption,
+that the (only) stringification counters offer would be somewhat stable.
+if https://wiki.python.org/moin/PythonSpeed/PerformanceTips (introduction of key argument to sort)
+in the sense transferred to dicts is not true, then this does not apply.
+
+I guess, that people rarely test the stringification of a Counter against another.
+What matters much more i guess is the fact that you can just re-eval the string and get your counter back.
+If a human is to read the Counter outside of an interactive session (that's in my mind when the counters get big),
+str is most likely to be used already (via print or formatting)
+
+references:
+ http://docs.python.org/2/tutorial/inputoutput.html
+ http://docs.python.org/2.7/library/functions.html#str
+ http://docs.python.org/2.7/library/functions.html#func-repr

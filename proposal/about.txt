@@ -1,10 +1,15 @@
-i have a personal background in mathematics. In fact i studied it for 8 good years
-specializing in algebra. And i am also very affine to python, and do by now program
-in it for about ten years.
+i have a background in mathematics. I studied it for 8 good years specializing in algebra.
+And i am also very affine to python, and do by now program with it for more than ten years.
 
 The extensive review of the Counter class, that i present here, is a result of both
-of these personal interests: python and algebra.
+interests: python and algebra.
 
-I would like to help improve the issues that i found by delivering constructive feedback
-and also share some new ideas that i had during implementation of my own Counter class.
-May it be of good use.
+I would like to help improve the issues that i found and deliver some constructive feedback.
+Also sharing some new ideas i had during implementation of my own Counter class.
+
+I had some data analysis to do, and stumbled across the Counter again. This time i wanted to subclass it
+just to capuslate some calculation stuff in the right place. that was almost the start of this lib.
+i was thinking it more of a vector aproach, and at first i implemented scalar operations, and more.
+When i came to making this implementation compatible to the i realized, that i had diverged from the stdlib
+quite more than expected. Further investigations unearthed a lot of different versions of the Counter source,
+and thus i suspect, that it is still not too mature, and might benefit from some constructive code & feedback.
